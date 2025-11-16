@@ -1,97 +1,56 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+## 📒 Sổ Thu Chi
 
-# Getting Started
+Ứng dụng React Native giúp ghi chép, phân tích và trực quan hóa dòng tiền cá nhân. Dự án đã được cấu hình đầy đủ: bottom tabs, database SQLite, bộ lọc nâng cao, theme sáng/tối, quảng cáo test và nhiều tiện ích mở rộng.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+### 🔑 Tính năng chính
 
-## Step 1: Start Metro
+- **Trang Tổng quan**: thẻ thống kê động, bộ lọc có animation, danh sách giao dịch kèm biểu đồ mini và banner quảng cáo test.
+- **Thêm thu/chi**: nhập số tiền với `react-native-currency-input`, chọn danh mục, ví, ngày, ghi chú và hiển thị quảng cáo toàn màn hình (interstitial test).
+- **Lịch tháng/năm**: `react-native-calendars` đánh dấu thu/chi theo ngày, điều hướng tháng, tóm tắt thu/chi và danh sách giao dịch mỗi ngày.
+- **Báo cáo**: biểu đồ tròn theo danh mục (SVG + d3-shape), cột so sánh thu/chi 6 tháng, bộ lọc tháng/năm/toàn thời gian.
+- **Tiện ích khác**: đổi theme (light/dark/system) được lưu bằng AsyncStorage, các phím tắt hữu ích, banner quảng cáo thử nghiệm.
+- **Lưu trữ**: SQLite (`react-native-sqlite-storage`) cho giao dịch, AsyncStorage cho thiết lập, seed demo data để thử nhanh.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+### 🧱 Kiến trúc & thư viện
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- Điều hướng: `@react-navigation/native`, bottom tabs, gesture-handler, reanimated, screens.
+- UI nâng cao: `react-native-linear-gradient`, `react-native-vector-icons`, `react-native-safe-area-context`.
+- Dữ liệu & tiện ích: `react-native-sqlite-storage`, `react-native-async-storage`, `react-native-calendars`, `react-native-currency-input`, `react-native-google-mobile-ads` (test IDs), `d3-shape`, `react-native-svg`.
+
+### 🚀 Cài đặt & chạy
 
 ```sh
-# Using npm
+npm install
+npx pod-install   # bắt buộc trên iOS sau khi cài deps
+
+# Start Metro
 npm start
 
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
+# Chạy ứng dụng
 npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
 npm run ios
 
-# OR using Yarn
-yarn ios
+# Test Jest + React Test Renderer
+npm test
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### 📱 Ghi chú triển khai
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+- Quảng cáo sử dụng test IDs của Google (banner + interstitial). Hãy thay bằng ID thật trước khi phát hành.
+- SQLite được khởi tạo với dữ liệu mẫu. Dùng `seedDemoDataIfNeeded()` để reset hoặc thay bằng migration thật.
+- Theme preference được lưu trong AsyncStorage, có thể chuyển nhanh ở tab **Khác**.
+- Nếu bật Flipper hoặc Hermes, nhớ chạy `npx pod-install` sau khi thêm native deps.
 
-## Step 3: Modify your app
+### 🧪 Kiểm thử & lint
 
-Now that you have successfully run the app, let's make changes!
+- `jest.setup.js` đã mock gesture-handler, reanimated, sqlite, ads… để test React components không phụ thuộc native.
+- `npm test` chạy một smoke test cho `App.tsx`. Bạn có thể bổ sung tests cụ thể cho từng screen/provider.
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+### 📂 Cấu trúc nổi bật
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+- `src/theme/ThemeProvider.tsx` – quản lý palette, toggle theme, persist AsyncStorage.
+- `src/context/TransactionContext.tsx` – CRUD giao dịch + thống kê theo tháng/danh mục.
+- `src/screens/*` – mỗi tab có UI/animation/ads riêng.
+- `src/data/database.ts` – khởi tạo SQLite, seed demo và helper CRUD.
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Chúc bạn xây dựng thêm nhiều tiện ích thú vị trên nền tảng Sổ Thu Chi! 💸
