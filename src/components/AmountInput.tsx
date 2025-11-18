@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import CurrencyInput from 'react-native-currency-input';
-import { useThemePalette } from '@/theme/ThemeProvider';
+import { useThemeStore } from '@/stores/themeStore';
 
 interface AmountInputProps {
   value: number;
@@ -10,7 +10,7 @@ interface AmountInputProps {
 }
 
 export function AmountInput({ value, onChangeValue, label }: AmountInputProps) {
-  const { palette } = useThemePalette();
+  const palette = useThemeStore(state => state.palette);
   const labelStyle = useMemo(() => ({ color: palette.muted }), [palette.muted]);
   const inputThemeStyle = useMemo(
     () => ({

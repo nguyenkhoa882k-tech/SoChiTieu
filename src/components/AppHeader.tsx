@@ -2,14 +2,14 @@ import LinearGradient from 'react-native-linear-gradient';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { useThemePalette } from '@/theme/ThemeProvider';
+import { useThemeStore } from '@/stores/themeStore';
 
 interface AppHeaderProps {
   subtitle?: string;
 }
 
 export function AppHeader({ subtitle }: AppHeaderProps) {
-  const { palette } = useThemePalette();
+  const palette = useThemeStore(state => state.palette);
 
   return (
     <View style={styles.wrapper}>

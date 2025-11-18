@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { useThemePalette } from '@/theme/ThemeProvider';
+import { useThemeStore } from '@/stores/themeStore';
 import { formatCurrency } from '@/utils/format';
 
 interface AnimatedStatCardProps {
@@ -21,7 +21,7 @@ export function AnimatedStatCard({
 }: AnimatedStatCardProps) {
   const scale = useRef(new Animated.Value(0.9)).current;
   const opacity = useRef(new Animated.Value(0)).current;
-  const { palette } = useThemePalette();
+  const palette = useThemeStore(state => state.palette);
 
   useEffect(() => {
     Animated.parallel([

@@ -10,11 +10,10 @@ import {
   View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { useThemePalette } from '@/theme/ThemeProvider';
-import { AdBanner } from '@/components/AdBanner';
+import { useThemeStore } from '@/stores/themeStore';
 
 export function MoreScreen() {
-  const { palette, preference, toggleTheme } = useThemePalette();
+  const { palette, preference, setPreference } = useThemeStore();
 
   const shortcuts = [
     {
@@ -53,7 +52,7 @@ export function MoreScreen() {
             trackColor={{ true: palette.primary, false: palette.border }}
             thumbColor="#fff"
             value={preference === 'dark'}
-            onValueChange={state => toggleTheme(state ? 'dark' : 'light')}
+            onValueChange={state => setPreference(state ? 'dark' : 'light')}
           />
         </View>
         <View style={styles.rowBetween}>
@@ -63,7 +62,7 @@ export function MoreScreen() {
           </View>
           <Switch
             value={preference === 'system'}
-            onValueChange={state => toggleTheme(state ? 'system' : 'light')}
+            onValueChange={state => setPreference(state ? 'system' : 'light')}
           />
         </View>
       </View>
@@ -93,7 +92,6 @@ export function MoreScreen() {
         <Text style={{ color: palette.muted }}>
           Bật quảng cáo thử nghiệm để đảm bảo tích hợp hoàn chỉnh trước khi lên store.
         </Text>
-        <AdBanner placement="more" />
       </View>
     </ScrollView>
   );

@@ -1,13 +1,12 @@
 import React, { useMemo } from 'react';
 import {
-  FlatList,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Transaction } from '@/types/transaction';
-import { useThemePalette } from '@/theme/ThemeProvider';
+import { useThemeStore } from '@/stores/themeStore';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { formatCurrency, formatDateLabel } from '@/utils/format';
 
@@ -17,7 +16,7 @@ interface TransactionListProps {
 }
 
 export function TransactionList({ data, emptyLabel }: TransactionListProps) {
-  const { palette } = useThemePalette();
+  const palette = useThemeStore(state => state.palette);
 
   const grouped = useMemo(() => {
     const buckets: Record<string, Transaction[]> = {};
@@ -45,15 +44,13 @@ export function TransactionList({ data, emptyLabel }: TransactionListProps) {
   }
 
   return (
-    <FlatList
-      data={grouped}
-      keyExtractor={item => item.date}
-      renderItem={({ item }) => (
-        <View style={styles.section}>
+    <>
+      {grouped.map(group => (
+        <View key={group.date} style={styles.section}>
           <Text style={[styles.sectionTitle, { color: palette.muted }]}> 
-            {formatDateLabel(item.date)}
+            {formatDateLabel(group.date)}
           </Text>
-          {item.items.map(tx => {
+          {group.items.map(tx => {
             const categoryMeta =
               CATEGORY_LIST.find(category => category.id === tx.category) ??
               CATEGORY_LIST.find(category => category.id === 'others');
@@ -99,8 +96,8 @@ export function TransactionList({ data, emptyLabel }: TransactionListProps) {
             );
           })}
         </View>
-      )}
-    />
+      ))}
+    </>
   );
 }
 

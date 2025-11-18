@@ -12,7 +12,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { Calendar } from 'react-native-calendars';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { TransactionFilter, defaultFilter } from '@/types/filters';
-import { useThemePalette } from '@/theme/ThemeProvider';
+import { useThemeStore } from '@/stores/themeStore';
 
 interface FilterSheetProps {
   visible: boolean;
@@ -23,7 +23,7 @@ interface FilterSheetProps {
 
 export function FilterSheet({ visible, value, onClose, onApply }: FilterSheetProps) {
   const [localFilter, setLocalFilter] = useState<TransactionFilter>(value);
-  const { palette } = useThemePalette();
+  const palette = useThemeStore(state => state.palette);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

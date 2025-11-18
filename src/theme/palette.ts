@@ -1,27 +1,48 @@
+// Material Design 3 inspired modern palette
 export const lightPalette = {
-  background: '#F5F6FA',
+  background: '#FAFAFA',
   card: '#FFFFFF',
-  primary: '#2C7BE5',
-  secondary: '#FF9F43',
-  text: '#1F2D3D',
-  muted: '#6C7A89',
-  border: '#E2E8F0',
-  success: '#27AE60',
-  danger: '#E74C3C',
-  accent: '#6C5DD3',
+  primary: '#6750A4',
+  secondary: '#625B71',
+  tertiary: '#7D5260',
+  text: '#1C1B1F',
+  muted: '#49454F',
+  border: '#E6E1E5',
+  success: '#2E7D32',
+  danger: '#D32F2F',
+  accent: '#6750A4',
+  warning: '#F57C00',
+  info: '#0277BD',
+  // Surfaces
+  surface: '#FFFFFF',
+  surfaceVariant: '#E7E0EC',
+  // Elevation & shadows
+  elevation1: 'rgba(103, 80, 164, 0.05)',
+  elevation2: 'rgba(103, 80, 164, 0.08)',
+  elevation3: 'rgba(103, 80, 164, 0.11)',
 };
 
 export const darkPalette = {
-  background: '#0F172A',
-  card: '#1E293B',
-  primary: '#60A5FA',
-  secondary: '#F4B14E',
-  text: '#F8FAFC',
-  muted: '#9CA3AF',
-  border: '#273449',
-  success: '#34D399',
-  danger: '#F87171',
-  accent: '#7C3AED',
+  background: '#1C1B1F',
+  card: '#2B2930',
+  primary: '#D0BCFF',
+  secondary: '#CCC2DC',
+  tertiary: '#EFB8C8',
+  text: '#E6E1E5',
+  muted: '#CAC4D0',
+  border: '#49454F',
+  success: '#81C784',
+  danger: '#EF5350',
+  accent: '#D0BCFF',
+  warning: '#FFB74D',
+  info: '#4FC3F7',
+  // Surfaces
+  surface: '#2B2930',
+  surfaceVariant: '#49454F',
+  // Elevation & shadows
+  elevation1: 'rgba(208, 188, 255, 0.05)',
+  elevation2: 'rgba(208, 188, 255, 0.08)',
+  elevation3: 'rgba(208, 188, 255, 0.11)',
 };
 
 export type ThemePalette = typeof lightPalette;

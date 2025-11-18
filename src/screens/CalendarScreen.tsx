@@ -2,8 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import Feather from 'react-native-vector-icons/Feather';
-import { useTransactions } from '@/context/TransactionContext';
-import { useThemePalette } from '@/theme/ThemeProvider';
+import { useTransactionStore } from '@/stores/transactionStore';
+import { useThemeStore } from '@/stores/themeStore';
 import { formatCurrency, formatDateLabel } from '@/utils/format';
 import { Transaction } from '@/types/transaction';
 import { TransactionList } from '@/components/TransactionList';
@@ -16,8 +16,8 @@ function getMonthKey(date: Date) {
 }
 
 export function CalendarScreen() {
-  const { palette } = useThemePalette();
-  const { transactions } = useTransactions();
+  const palette = useThemeStore(state => state.palette);
+  const transactions = useTransactionStore(state => state.transactions);
   const [monthAnchor, setMonthAnchor] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().slice(0, 10),
@@ -149,12 +149,12 @@ export function CalendarScreen() {
         </View>
       </View>
 
+      <AdBanner placement="calendar" />
+
       <Text style={[styles.sectionTitle, { color: palette.text }]}>
         {`Chi tiết ${formatDateLabel(selectedDate)}`}
       </Text>
       <TransactionList data={selectedItems} emptyLabel="Không có giao dịch trong ngày" />
-
-      <AdBanner placement="calendar" />
     </ScrollView>
   );
 }

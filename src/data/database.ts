@@ -1,6 +1,5 @@
 import SQLite from 'react-native-sqlite-storage';
 import { Transaction, TransactionInput } from '@/types/transaction';
-import { seedTransactions } from './seed';
 
 SQLite.enablePromise(true);
 
@@ -146,9 +145,8 @@ export async function seedDemoDataIfNeeded() {
     `SELECT COUNT(*) as count FROM ${TABLE_NAME}`,
   );
   const count = result.rows.item(0)?.count ?? 0;
-  if (count > 0) {
-    return;
-  }
 
-  await Promise.all(seedTransactions.map(item => insertTransaction(item)));
+  // Không seed dữ liệu mẫu nữa - người dùng tự thêm
+  // Database sẽ trống ban đầu
+  return count;
 }

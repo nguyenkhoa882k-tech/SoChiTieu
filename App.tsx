@@ -1,14 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ThemeProvider, useThemePalette } from '@/theme/ThemeProvider';
-import { TransactionProvider } from '@/context/TransactionContext';
+import { useThemeStore } from '@/stores/themeStore';
+import { useTransactionStore } from '@/stores/transactionStore';
 import { MainTabs } from '@/navigation/MainTabs';
+import { seedDemoDataIfNeeded } from '@/data/database';
 
 function RootNavigation() {
-  const { isDark, palette } = useThemePalette();
+  const { isDark, palette, initTheme } = useThemeStore();
+  const loadTransactions = useTransactionStore(state => state.loadTransactions);
+
+  useEffect(() => {
+    const init = async () => {
+      await initTheme();
+      await seedDemoDataIfNeeded();
+      await loadTransactions();
+    };
+    init();
+  }, [initTheme, loadTransactions]);
+
   const navigationTheme = {
     ...(isDark ? DarkTheme : DefaultTheme),
     colors: {
@@ -33,22 +45,14 @@ function RootNavigation() {
   );
 }
 
-function AppProviders() {
+export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <TransactionProvider>
-            <RootNavigation />
-          </TransactionProvider>
-        </ThemeProvider>
+        <RootNavigation />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
-}
-
-export default function App() {
-  return <AppProviders />;
 }
 
 const styles = StyleSheet.create({

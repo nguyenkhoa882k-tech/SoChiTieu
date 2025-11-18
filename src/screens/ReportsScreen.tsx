@@ -3,8 +3,8 @@ import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react
 import Svg, { G, Path } from 'react-native-svg';
 import { pie, arc } from 'd3-shape';
 import Feather from 'react-native-vector-icons/Feather';
-import { useTransactions } from '@/context/TransactionContext';
-import { useThemePalette } from '@/theme/ThemeProvider';
+import { useTransactionStore } from '@/stores/transactionStore';
+import { useThemeStore } from '@/stores/themeStore';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { formatCurrency } from '@/utils/format';
 import { AdBanner } from '@/components/AdBanner';
@@ -15,8 +15,8 @@ const radius = chartWidth / 3;
 type RangeMode = 'month' | 'year' | 'lifetime';
 
 export function ReportsScreen() {
-  const { palette } = useThemePalette();
-  const { transactions, stats } = useTransactions();
+  const palette = useThemeStore(state => state.palette);
+  const { transactions, stats } = useTransactionStore();
   const [viewMode, setViewMode] = useState<RangeMode>('month');
   const now = new Date();
 
@@ -144,6 +144,8 @@ export function ReportsScreen() {
         )}
       </View>
 
+      <AdBanner placement="reports" />
+
       <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }]}>
         <Text style={[styles.cardTitle, { color: palette.text }]}>Xu hướng 6 tháng</Text>
         <BarTrend
@@ -154,8 +156,6 @@ export function ReportsScreen() {
           borderColor={palette.border}
         />
       </View>
-
-      <AdBanner placement="reports" />
     </ScrollView>
   );
 }

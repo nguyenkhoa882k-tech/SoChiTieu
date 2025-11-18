@@ -19,20 +19,19 @@ import {
   TestIds,
   useInterstitialAd,
 } from 'react-native-google-mobile-ads';
-import { useTransactions } from '@/context/TransactionContext';
-import { useThemePalette } from '@/theme/ThemeProvider';
+import { useTransactionStore } from '@/stores/transactionStore';
+import { useThemeStore } from '@/stores/themeStore';
 import { AmountInput } from '@/components/AmountInput';
 import { CATEGORY_LIST, DEFAULT_WALLETS } from '@/constants/categories';
 import { formatDateLabel } from '@/utils/format';
 import { TransactionType } from '@/types/transaction';
-import { AdBanner } from '@/components/AdBanner';
 
 const IOS_INTERSTITIAL = 'ca-app-pub-3940256099942544/4411468910';
 const ANDROID_INTERSTITIAL = 'ca-app-pub-3940256099942544/1033173712';
 
 export function AddEntryScreen() {
-  const { palette } = useThemePalette();
-  const { addTransaction } = useTransactions();
+  const palette = useThemeStore(state => state.palette);
+  const addTransaction = useTransactionStore(state => state.addTransaction);
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState('food');
@@ -322,8 +321,6 @@ export function AddEntryScreen() {
       >
         <Text style={styles.saveText}>{submitting ? 'Đang lưu...' : 'Lưu giao dịch'}</Text>
       </Pressable>
-
-      <AdBanner placement="add-entry" />
     </ScrollView>
   );
 }

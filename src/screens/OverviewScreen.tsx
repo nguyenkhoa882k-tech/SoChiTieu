@@ -15,14 +15,14 @@ import { TransactionList } from '@/components/TransactionList';
 import { AdBanner } from '@/components/AdBanner';
 import { FilterSheet } from '@/components/FilterSheet';
 import { defaultFilter, TransactionFilter } from '@/types/filters';
-import { useTransactions } from '@/context/TransactionContext';
+import { useTransactionStore } from '@/stores/transactionStore';
 import { formatCurrency } from '@/utils/format';
-import { useThemePalette } from '@/theme/ThemeProvider';
+import { useThemeStore } from '@/stores/themeStore';
 import { TabParamList } from '@/navigation/MainTabs';
 
 export function OverviewScreen() {
-  const { palette } = useThemePalette();
-  const { transactions, stats, loading } = useTransactions();
+  const palette = useThemeStore(state => state.palette);
+  const { transactions, stats, loading } = useTransactionStore();
   const navigation = useNavigation<NavigationProp<TabParamList>>();
   const [filterVisible, setFilterVisible] = useState(false);
   const [filter, setFilter] = useState<TransactionFilter>(defaultFilter);
@@ -80,6 +80,9 @@ export function OverviewScreen() {
             hint="Theo dõi hạn mức"
           />
         </View>
+
+        <AdBanner placement="overview" />
+
         <View
           style={[
             styles.balanceCard,
@@ -129,8 +132,6 @@ export function OverviewScreen() {
             emptyLabel="Bắt đầu thêm giao dịch đầu tiên"
           />
         )}
-
-        <AdBanner placement="overview" />
       </ScrollView>
       <FilterSheet
         visible={filterVisible}
@@ -149,45 +150,63 @@ const styles = StyleSheet.create({
   statRow: {
     flexDirection: 'row',
     gap: 12,
+    marginBottom: 4,
   },
   balanceCard: {
     marginTop: 16,
-    padding: 20,
-    borderRadius: 20,
-    borderWidth: 1,
+    marginBottom: 8,
+    padding: 24,
+    borderRadius: 24,
+    borderWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
   },
   balanceLabel: {
     textTransform: 'uppercase',
-    fontSize: 12,
-    letterSpacing: 0.5,
+    fontSize: 11,
+    letterSpacing: 1,
+    fontWeight: '700',
+    opacity: 0.7,
   },
   balanceValue: {
-    marginTop: 6,
-    fontSize: 28,
-    fontWeight: '700',
+    marginTop: 8,
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 20,
     gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   addButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 15,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   filterRow: {
     marginTop: 24,
+    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -196,25 +215,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
   },
   filterText: {
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 13,
   },
   badge: {
-    minWidth: 18,
-    height: 18,
+    minWidth: 20,
+    height: 20,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
     color: '#fff',
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
   },
   scrollContent: {
     padding: 20,
