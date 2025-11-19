@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -21,7 +20,10 @@ import {
 } from 'react-native-google-mobile-ads';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { useCategoryStore } from '@/stores/categoryStore';
 import { AmountInput } from '@/components/AmountInput';
+import { CustomModal } from '@/components/CustomModal';
+import { AddCategoryModal } from '@/components/AddCategoryModal';
 import { CATEGORY_LIST, DEFAULT_WALLETS } from '@/constants/categories';
 import { formatDateLabel } from '@/utils/format';
 import { TransactionType } from '@/types/transaction';
@@ -40,6 +42,14 @@ export function AddEntryScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [submitting, setSubmitting] = useState(false);
   const [showIosPicker, setShowIosPicker] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({ title: '', message: '', type: 'info' });
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const { customCategories, addCustomCategory } = useCategoryStore();
 
   const adUnitId = Platform.select({
     ios: IOS_INTERSTITIAL,
@@ -61,11 +71,16 @@ export function AddEntryScreen() {
   }, [isClosed, load]);
 
   const availableCategories = useMemo(
-    () =>
-      CATEGORY_LIST.filter(item =>
+    () => {
+      const defaultCats = CATEGORY_LIST.filter(item =>
         item.type === 'common' ? true : item.type === type,
-      ),
-    [type],
+      );
+      const customCats = customCategories.filter(item =>
+        item.type === 'common' ? true : item.type === type,
+      );
+      return [...defaultCats, ...customCats];
+    },
+    [type, customCategories],
   );
 
   const toggleActiveStyle = React.useMemo(
@@ -166,7 +181,12 @@ export function AddEntryScreen() {
 
   const handleSave = async () => {
     if (!amount) {
-      Alert.alert('Thiếu thông tin', 'Vui lòng nhập số tiền');
+      setModalConfig({
+        title: 'Thiếu thông tin',
+        message: 'Vui lòng nhập số tiền',
+        type: 'warning',
+      });
+      setModalVisible(true);
       return;
     }
     setSubmitting(true);
@@ -179,7 +199,12 @@ export function AddEntryScreen() {
         wallet,
         date: selectedDate.toISOString(),
       });
-      Alert.alert('Thành công', 'Giao dịch đã được lưu');
+      setModalConfig({
+        title: 'Thành công',
+        message: 'Giao dịch đã được lưu',
+        type: 'success',
+      });
+      setModalVisible(true);
       if (isLoaded) {
         show();
       }
@@ -187,7 +212,12 @@ export function AddEntryScreen() {
       setNote('');
     } catch (error) {
       console.error('Failed to add transaction', error);
-      Alert.alert('Lỗi', 'Không thể lưu, vui lòng thử lại');
+      setModalConfig({
+        title: 'Lỗi',
+        message: 'Không thể lưu, vui lòng thử lại',
+        type: 'error',
+      });
+      setModalVisible(true);
     } finally {
       setSubmitting(false);
     }
@@ -255,6 +285,15 @@ export function AddEntryScreen() {
             </Pressable>
           );
         })}
+        <Pressable
+          style={[styles.categoryCard, styles.addCategoryCard, { borderColor: palette.primary, backgroundColor: `${palette.primary}10` }]}
+          onPress={() => setShowAddCategory(true)}
+        >
+          <Feather name="plus" size={18} color={palette.primary} />
+          <Text style={[styles.categoryText, { color: palette.primary }]}>
+            Thêm mới
+          </Text>
+        </Pressable>
       </ScrollView>
 
       <Text style={[styles.label, labelMutedStyle]}>Ví sử dụng</Text>
@@ -321,6 +360,29 @@ export function AddEntryScreen() {
       >
         <Text style={styles.saveText}>{submitting ? 'Đang lưu...' : 'Lưu giao dịch'}</Text>
       </Pressable>
+
+      <CustomModal
+        visible={modalVisible}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        onConfirm={() => setModalVisible(false)}
+        onCancel={() => setModalVisible(false)}
+      />
+
+      <AddCategoryModal
+        visible={showAddCategory}
+        onClose={() => setShowAddCategory(false)}
+        onAdd={(newCategory) => {
+          addCustomCategory(newCategory);
+          setModalConfig({
+            title: 'Thành công',
+            message: `Đã thêm danh mục "${newCategory.label}"`,
+            type: 'success',
+          });
+          setModalVisible(true);
+        }}
+      />
     </ScrollView>
   );
 }
@@ -367,6 +429,10 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontWeight: '600',
+  },
+  addCategoryCard: {
+    borderStyle: 'dashed',
+    borderWidth: 2,
   },
   walletRow: {
     flexDirection: 'row',

@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 import Feather from 'react-native-vector-icons/Feather';
 import { OverviewScreen } from '@/screens/OverviewScreen';
@@ -40,32 +41,24 @@ interface AnimatedIconProps {
 }
 
 function AnimatedIcon({ routeName, color, size, focused }: AnimatedIconProps) {
-  const translateY = useSharedValue(focused ? -8 : 0);
-  const scale = useSharedValue(focused ? 1.1 : 1);
   const iconName = TAB_ICONS[routeName] ?? 'circle';
+  const translateY = useSharedValue(0);
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(0);
 
   React.useEffect(() => {
-    if (focused) {
-      // Lift up animation
-      translateY.value = withSpring(-8, {
-        damping: 15,
-        stiffness: 150,
-      });
-      scale.value = withSpring(1.1, {
-        damping: 15,
-        stiffness: 150,
-      });
-    } else {
-      translateY.value = withSpring(0, {
-        damping: 15,
-        stiffness: 150,
-      });
-      scale.value = withSpring(1, {
-        damping: 15,
-        stiffness: 150,
-      });
-    }
-  }, [focused, translateY, scale]);
+    translateY.value = withSpring(focused ? -6 : 0, {
+      damping: 12,
+      stiffness: 120,
+    });
+    scale.value = withSpring(focused ? 1.15 : 1, {
+      damping: 12,
+      stiffness: 120,
+    });
+    opacity.value = withTiming(focused ? 1 : 0, {
+      duration: 200,
+    });
+  }, [focused]);
 
   const iconAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -74,22 +67,26 @@ function AnimatedIcon({ routeName, color, size, focused }: AnimatedIconProps) {
     ],
   }));
 
+  const backgroundAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
   return (
-    <Animated.View style={iconAnimatedStyle}>
-      <View style={styles.iconWrapper}>
+    <View style={styles.iconWrapper}>
+      <Animated.View style={[styles.iconBackground, backgroundAnimatedStyle]}>
         <View
           style={[
-            styles.iconContainer,
-            focused && [
-              styles.iconContainerFocused,
-              { backgroundColor: `${color}20` },
-            ],
+            styles.iconBackgroundInner,
+            { backgroundColor: `${color}15` },
           ]}
-        >
-          <Feather name={iconName as any} size={size} color={color} />
+        />
+      </Animated.View>
+      <Animated.View style={iconAnimatedStyle}>
+        <View style={styles.iconContainer}>
+          <Feather name={iconName} size={size} color={color} />
         </View>
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </View>
   );
 }
 
@@ -185,16 +182,23 @@ const styles = StyleSheet.create({
   iconWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
+    width: 60,
+    height: 40,
+  },
+  iconBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconBackgroundInner: {
+    width: 50,
+    height: 32,
+    borderRadius: 16,
   },
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  iconContainerFocused: {
-    borderRadius: 20,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
   },
 });

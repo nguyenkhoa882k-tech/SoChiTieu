@@ -8,9 +8,10 @@ import { useThemeStore } from '@/stores/themeStore';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { formatCurrency } from '@/utils/format';
 import { AdBanner } from '@/components/AdBanner';
+import { MonthYearPicker } from '@/components/MonthYearPicker';
 
-const chartWidth = Dimensions.get('window').width - 60;
-const radius = chartWidth / 3;
+const chartWidth = Dimensions.get('window').width - 70;
+const radius = chartWidth / 2.5;
 
 type RangeMode = 'month' | 'year' | 'lifetime';
 
@@ -19,22 +20,25 @@ export function ReportsScreen() {
   const { transactions, stats } = useTransactionStore();
   const [viewMode, setViewMode] = useState<RangeMode>('month');
   const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(tx => {
       const date = new Date(tx.date);
       if (viewMode === 'month') {
         return (
-          date.getMonth() === now.getMonth() &&
-          date.getFullYear() === now.getFullYear()
+          date.getMonth() === selectedMonth &&
+          date.getFullYear() === selectedYear
         );
       }
       if (viewMode === 'year') {
-        return date.getFullYear() === now.getFullYear();
+        return date.getFullYear() === selectedYear;
       }
       return true;
     });
-  }, [transactions, viewMode, now]);
+  }, [transactions, viewMode, selectedMonth, selectedYear]);
 
   const expenseByCategory = useMemo(() => {
     const bucket: Record<string, number> = {};
@@ -102,23 +106,87 @@ export function ReportsScreen() {
         })}
       </View>
 
+      {viewMode === 'month' && (
+        <View style={[styles.monthPicker, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <Pressable
+            style={styles.monthArrow}
+            onPress={() => {
+              if (selectedMonth === 0) {
+                setSelectedMonth(11);
+                setSelectedYear(selectedYear - 1);
+              } else {
+                setSelectedMonth(selectedMonth - 1);
+              }
+            }}
+          >
+            <Feather name="chevron-left" size={24} color={palette.primary} />
+          </Pressable>
+          <Pressable 
+            style={styles.monthDisplay}
+            onPress={() => setShowMonthPicker(true)}
+          >
+            <Text style={[styles.monthText, { color: palette.text }]}>
+              Tháng {selectedMonth + 1}/{selectedYear}
+            </Text>
+            <Feather name="calendar" size={16} color={palette.muted} />
+          </Pressable>
+          <Pressable
+            style={styles.monthArrow}
+            onPress={() => {
+              if (selectedMonth === 11) {
+                setSelectedMonth(0);
+                setSelectedYear(selectedYear + 1);
+              } else {
+                setSelectedMonth(selectedMonth + 1);
+              }
+            }}
+          >
+            <Feather name="chevron-right" size={24} color={palette.primary} />
+          </Pressable>
+        </View>
+      )}
+
+      {viewMode === 'year' && (
+        <View style={[styles.monthPicker, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <Pressable
+            style={styles.monthArrow}
+            onPress={() => setSelectedYear(selectedYear - 1)}
+          >
+            <Feather name="chevron-left" size={24} color={palette.primary} />
+          </Pressable>
+          <View style={styles.monthDisplay}>
+            <Text style={[styles.monthText, { color: palette.text }]}>
+              Năm {selectedYear}
+            </Text>
+          </View>
+          <Pressable
+            style={styles.monthArrow}
+            onPress={() => setSelectedYear(selectedYear + 1)}
+          >
+            <Feather name="chevron-right" size={24} color={palette.primary} />
+          </Pressable>
+        </View>
+      )}
+
       <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }]}
         accessibilityRole="summary"
       >
         <Text style={[styles.cardTitle, { color: palette.text }]}>Báo cáo chi tiêu</Text>
         {expenseByCategory.length ? (
           <View style={styles.pieRow}>
-            <Svg width={chartWidth} height={chartWidth}>
-              <G x={chartWidth / 2} y={chartWidth / 2}>
-                {pieSlices.map((slice, index) => (
-                  <Path
-                    key={`slice-${slice.index}`}
-                    d={arcGenerator(slice) ?? undefined}
-                    fill={expenseByCategory[index]?.color ?? palette.accent}
-                  />
-                ))}
-              </G>
-            </Svg>
+            <View style={styles.chartContainer}>
+              <Svg width={chartWidth} height={chartWidth}>
+                <G x={chartWidth / 2} y={chartWidth / 2}>
+                  {pieSlices.map((slice, index) => (
+                    <Path
+                      key={`slice-${slice.index}`}
+                      d={arcGenerator(slice) ?? undefined}
+                      fill={expenseByCategory[index]?.color ?? palette.accent}
+                    />
+                  ))}
+                </G>
+              </Svg>
+            </View>
             <View style={styles.legend}>
               {topExpenses.map(item => (
                 <View key={item.categoryId} style={styles.legendRow}>
@@ -156,6 +224,17 @@ export function ReportsScreen() {
           borderColor={palette.border}
         />
       </View>
+
+      <MonthYearPicker
+        visible={showMonthPicker}
+        onClose={() => setShowMonthPicker(false)}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
+        onSelect={(month, year) => {
+          setSelectedMonth(month);
+          setSelectedYear(year);
+        }}
+      />
     </ScrollView>
   );
 }
@@ -232,6 +311,28 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontWeight: '600',
   },
+  monthPicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 12,
+  },
+  monthArrow: {
+    padding: 8,
+  },
+  monthDisplay: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  monthText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
   card: {
     borderRadius: 24,
     padding: 20,
@@ -248,6 +349,10 @@ const styles = StyleSheet.create({
     gap: 12,
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  chartContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   legend: {
     flex: 1,

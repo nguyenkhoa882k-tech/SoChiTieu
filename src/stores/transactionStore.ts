@@ -35,6 +35,7 @@ interface TransactionState {
     updates: Partial<TransactionInput>,
   ) => Promise<Transaction | null>;
   refresh: () => Promise<void>;
+  importTransactions: (transactions: Transaction[]) => Promise<void>;
 }
 
 const computeStats = (transactions: Transaction[]): TransactionStats => {
@@ -141,6 +142,16 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   },
 
   refresh: async () => {
+    await get().loadTransactions();
+  },
+
+  importTransactions: async (newTransactions: Transaction[]) => {
+    // Insert all transactions into database
+    for (const tx of newTransactions) {
+      const { id, ...input } = tx;
+      await insertTransaction(input);
+    }
+    // Reload all transactions
     await get().loadTransactions();
   },
 }));

@@ -85,6 +85,11 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    
+    // Add vector icons fonts
+    project.ext.vectoricons = [
+        iconFontNames: ['Feather.ttf']
+    ]
     signingConfigs {
         debug {
             storeFile file('debug.keystore')

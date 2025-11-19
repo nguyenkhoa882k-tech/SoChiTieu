@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  Alert,
   Linking,
   Pressable,
   ScrollView,
@@ -11,28 +10,184 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useThemeStore } from '@/stores/themeStore';
+import { useTransactionStore } from '@/stores/transactionStore';
+import { useCategoryStore } from '@/stores/categoryStore';
+import { CustomModal } from '@/components/CustomModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
+import { FilePickerModal } from '@/components/FilePickerModal';
+import {
+  exportData,
+  importData,
+  shareExportedFile,
+} from '@/utils/dataExport';
 
 export function MoreScreen() {
   const { palette, preference, setPreference } = useThemeStore();
+  const { transactions, importTransactions } = useTransactionStore();
+  const { customCategories, addCustomCategory } = useCategoryStore();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({ title: '', message: '', type: 'info' });
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [showFilePicker, setShowFilePicker] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      const result = await exportData(transactions, customCategories);
+      
+      if (result.success && result.filePath) {
+        // Ask user if they want to share
+        setConfirmModal({
+          visible: true,
+          title: 'Xuất dữ liệu thành công',
+          message: result.message + '\n\nBạn có muốn chia sẻ file này?',
+          onConfirm: async () => {
+            setConfirmModal({ ...confirmModal, visible: false });
+            await shareExportedFile(result.filePath!);
+          },
+        });
+      } else {
+        setModalConfig({
+          title: 'Lỗi',
+          message: result.message,
+          type: 'error',
+        });
+        setModalVisible(true);
+      }
+    } catch (error) {
+      setModalConfig({
+        title: 'Lỗi',
+        message: error instanceof Error ? error.message : 'Không thể xuất dữ liệu',
+        type: 'error',
+      });
+      setModalVisible(true);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportData = async () => {
+    // Show file picker
+    setShowFilePicker(true);
+  };
+
+  const handleFileSelected = async (filePath: string) => {
+    setShowFilePicker(false);
+    
+    try {
+      setIsImporting(true);
+
+      // Import data
+      const result = await importData(filePath);
+      
+      if (result.success && result.data) {
+        // Confirm before importing
+        setConfirmModal({
+          visible: true,
+          title: 'Xác nhận nhập dữ liệu',
+          message: `Tìm thấy ${result.data.transactions.length} giao dịch.\n\nDữ liệu mới sẽ được thêm vào dữ liệu hiện tại. Tiếp tục?`,
+          onConfirm: async () => {
+            setConfirmModal({ ...confirmModal, visible: false });
+            try {
+              // Import transactions
+              await importTransactions(result.data!.transactions);
+              
+              // Import custom categories if available
+              if (result.data!.customCategories) {
+                for (const category of result.data!.customCategories) {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  const { id, ...categoryData } = category;
+                  await addCustomCategory(categoryData);
+                }
+              }
+              
+              setModalConfig({
+                title: 'Thành công',
+                message: result.message,
+                type: 'success',
+              });
+              setModalVisible(true);
+            } catch {
+              setModalConfig({
+                title: 'Lỗi',
+                message: 'Không thể nhập dữ liệu vào database',
+                type: 'error',
+              });
+              setModalVisible(true);
+            }
+          },
+        });
+      } else {
+        setModalConfig({
+          title: 'Lỗi',
+          message: result.message,
+          type: 'error',
+        });
+        setModalVisible(true);
+      }
+    } catch (error) {
+      setModalConfig({
+        title: 'Lỗi',
+        message: error instanceof Error ? error.message : 'Không thể nhập dữ liệu',
+        type: 'error',
+      });
+      setModalVisible(true);
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const shortcuts = [
+    {
+      icon: 'upload',
+      title: 'Xuất dữ liệu',
+      subtitle: 'Sao lưu dữ liệu đã mã hóa',
+      onPress: handleExportData,
+      loading: isExporting,
+    },
+    {
+      icon: 'download',
+      title: 'Nhập dữ liệu',
+      subtitle: 'Khôi phục từ file sao lưu',
+      onPress: handleImportData,
+      loading: isImporting,
+    },
     {
       icon: 'bell',
       title: 'Nhắc lịch chi tiêu',
       subtitle: 'Đặt nhắc nhở tiết kiệm mỗi tuần',
-      onPress: () => Alert.alert('Nhắc lịch', 'Tính năng sẽ sớm khả dụng'),
-    },
-    {
-      icon: 'download',
-      title: 'Xuất báo cáo CSV',
-      subtitle: 'Gửi file qua email chỉ với 1 chạm',
-      onPress: () => Alert.alert('Xuất báo cáo', 'Đang chuẩn bị file mẫu'),
+      onPress: () => {
+        setModalConfig({
+          title: 'Nhắc lịch',
+          message: 'Tính năng sẽ sớm khả dụng',
+          type: 'info',
+        });
+        setModalVisible(true);
+      },
+      loading: false,
     },
     {
       icon: 'life-buoy',
       title: 'Trung tâm hỗ trợ',
       subtitle: 'Gửi phản hồi hoặc xem hướng dẫn',
       onPress: () => Linking.openURL('mailto:support@sochitieu.app'),
+      loading: false,
     },
   ];
 
@@ -74,9 +229,14 @@ export function MoreScreen() {
             key={item.title}
             style={[styles.shortcutRow, { borderColor: palette.border }]}
             onPress={item.onPress}
+            disabled={item.loading}
           >
             <View style={[styles.iconWrapper, { backgroundColor: `${palette.primary}15` }]}> 
-              <Feather name={item.icon as any} size={20} color={palette.primary} />
+              {item.loading ? (
+                <Text style={{ color: palette.primary }}>⏳</Text>
+              ) : (
+                <Feather name={item.icon as any} size={20} color={palette.primary} />
+              )}
             </View>
             <View style={styles.flexFill}>
               <Text style={[styles.title, { color: palette.text }]}>{item.title}</Text>
@@ -93,6 +253,32 @@ export function MoreScreen() {
           Bật quảng cáo thử nghiệm để đảm bảo tích hợp hoàn chỉnh trước khi lên store.
         </Text>
       </View>
+
+      <CustomModal
+        visible={modalVisible}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        onConfirm={() => setModalVisible(false)}
+        onCancel={() => setModalVisible(false)}
+      />
+
+      <ConfirmModal
+        visible={confirmModal.visible}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.title.includes('xuất') ? 'Chia sẻ' : 'Nhập'}
+        cancelText={confirmModal.title.includes('xuất') ? 'Không' : 'Huỷ'}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ ...confirmModal, visible: false })}
+        type={confirmModal.title.includes('xuất') ? 'info' : 'warning'}
+      />
+
+      <FilePickerModal
+        visible={showFilePicker}
+        onSelect={handleFileSelected}
+        onCancel={() => setShowFilePicker(false)}
+      />
     </ScrollView>
   );
 }
