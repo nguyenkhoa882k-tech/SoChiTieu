@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -20,6 +21,7 @@ import {
   importData,
   shareExportedFile,
 } from '@/utils/dataExport';
+import { exportCSV, shareCSVFile } from '@/utils/csvExport';
 
 export function MoreScreen() {
   const { palette, preference, setPreference } = useThemeStore();
@@ -33,7 +35,12 @@ export function MoreScreen() {
   }>({ title: '', message: '', type: 'info' });
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isExportingCSV, setIsExportingCSV] = useState(false);
   const [showFilePicker, setShowFilePicker] = useState(false);
+  const [downloadInfo, setDownloadInfo] = useState<{
+    fileName: string;
+    folderPath: string;
+  } | null>(null);
   const [confirmModal, setConfirmModal] = useState<{
     visible: boolean;
     title: string;
@@ -53,13 +60,34 @@ export function MoreScreen() {
       
       if (result.success && result.filePath) {
         // Ask user if they want to share
+        const fileName = result.filePath.split('/').pop() || 'file sao lưu';
+        const folderPath = Platform.OS === 'android' ? 'Downloads' : 'Documents';
+        
+        setDownloadInfo({ fileName, folderPath });
+        
         setConfirmModal({
           visible: true,
           title: 'Xuất dữ liệu thành công',
-          message: result.message + '\n\nBạn có muốn chia sẻ file này?',
+          message: result.message + `\n\nFile: ${fileName}\nVị trí: ${folderPath}\n\nBạn muốn làm gì với file này?`,
           onConfirm: async () => {
             setConfirmModal({ ...confirmModal, visible: false });
-            await shareExportedFile(result.filePath!);
+            try {
+              await shareExportedFile(result.filePath!);
+              setModalConfig({
+                title: 'Chia sẻ thành công',
+                message: 'File sao lưu đã được chia sẻ',
+                type: 'success',
+              });
+              setModalVisible(true);
+            } catch {
+              // User cancelled share
+              setModalConfig({
+                title: 'Đã lưu file',
+                message: `File đã được lưu tại:\n${folderPath}/${fileName}`,
+                type: 'info',
+              });
+              setModalVisible(true);
+            }
           },
         });
       } else {
@@ -85,6 +113,63 @@ export function MoreScreen() {
   const handleImportData = async () => {
     // Show file picker
     setShowFilePicker(true);
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      setIsExportingCSV(true);
+      const result = await exportCSV(transactions);
+      
+      if (result.success && result.filePath) {
+        // Show modal with 2 options: Share or Download
+        const fileName = result.filePath.split('/').pop() || 'file CSV';
+        const folderPath = Platform.OS === 'android' ? 'Downloads' : 'Documents';
+        
+        setDownloadInfo({ fileName, folderPath });
+        
+        setConfirmModal({
+          visible: true,
+          title: 'Xuất CSV thành công',
+          message: result.message + `\n\nFile: ${fileName}\nVị trí: ${folderPath}\n\nBạn muốn làm gì với file này?`,
+          onConfirm: async () => {
+            setConfirmModal({ ...confirmModal, visible: false });
+            try {
+              await shareCSVFile(result.filePath!);
+              setModalConfig({
+                title: 'Chia sẻ thành công',
+                message: 'File CSV đã được chia sẻ',
+                type: 'success',
+              });
+              setModalVisible(true);
+            } catch {
+              // User cancelled share
+              setModalConfig({
+                title: 'Đã lưu file',
+                message: `File đã được lưu tại:\n${folderPath}/${fileName}`,
+                type: 'info',
+              });
+              setModalVisible(true);
+            }
+          },
+        });
+      } else {
+        setModalConfig({
+          title: 'Lỗi',
+          message: result.message,
+          type: 'error',
+        });
+        setModalVisible(true);
+      }
+    } catch (error) {
+      setModalConfig({
+        title: 'Lỗi',
+        message: error instanceof Error ? error.message : 'Không thể xuất CSV',
+        type: 'error',
+      });
+      setModalVisible(true);
+    } finally {
+      setIsExportingCSV(false);
+    }
   };
 
   const handleFileSelected = async (filePath: string) => {
@@ -167,6 +252,13 @@ export function MoreScreen() {
       subtitle: 'Khôi phục từ file sao lưu',
       onPress: handleImportData,
       loading: isImporting,
+    },
+    {
+      icon: 'file-text',
+      title: 'Xuất báo cáo CSV',
+      subtitle: 'Gửi file qua email chỉ với 1 chạm',
+      onPress: handleExportCSV,
+      loading: isExportingCSV,
     },
     {
       icon: 'bell',
@@ -267,11 +359,33 @@ export function MoreScreen() {
         visible={confirmModal.visible}
         title={confirmModal.title}
         message={confirmModal.message}
-        confirmText={confirmModal.title.includes('xuất') ? 'Chia sẻ' : 'Nhập'}
-        cancelText={confirmModal.title.includes('xuất') ? 'Không' : 'Huỷ'}
+        confirmText={
+          confirmModal.title.includes('CSV') 
+            ? 'Chia sẻ' 
+            : confirmModal.title.includes('xuất dữ liệu')
+            ? 'Chia sẻ'
+            : 'Nhập'
+        }
+        cancelText={
+          confirmModal.title.includes('CSV') || confirmModal.title.includes('xuất')
+            ? 'Tải xuống'
+            : 'Huỷ'
+        }
         onConfirm={confirmModal.onConfirm}
-        onCancel={() => setConfirmModal({ ...confirmModal, visible: false })}
-        type={confirmModal.title.includes('xuất') ? 'info' : 'warning'}
+        onCancel={() => {
+          setConfirmModal({ ...confirmModal, visible: false });
+          // Show download success message when user chooses "Tải xuống"
+          if (downloadInfo && (confirmModal.title.includes('xuất') || confirmModal.title.includes('CSV'))) {
+            setModalConfig({
+              title: 'Tải xuống thành công',
+              message: `File đã được lưu tại:\n${downloadInfo.folderPath}/${downloadInfo.fileName}`,
+              type: 'success',
+            });
+            setModalVisible(true);
+            setDownloadInfo(null);
+          }
+        }}
+        type={confirmModal.title.includes('xuất') || confirmModal.title.includes('CSV') ? 'info' : 'warning'}
       />
 
       <FilePickerModal

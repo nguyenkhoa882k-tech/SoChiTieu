@@ -1,4 +1,4 @@
-import RNFS from '@dr.pogodin/react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import Share from 'react-native-share';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { encryptData, decryptData } from './encryption';
@@ -13,6 +13,15 @@ interface BackupData {
   transactions: Transaction[];
   customCategories?: any[];
 }
+
+// Safe path getters
+const getDocumentPath = () => {
+  return RNFS.DocumentDirectoryPath || '/storage/emulated/0/Documents';
+};
+
+const getDownloadPath = () => {
+  return RNFS.DownloadDirectoryPath || '/storage/emulated/0/Download';
+};
 
 /**
  * Request storage permission on Android
@@ -78,8 +87,8 @@ export async function exportData(
     const fileName = `${FILE_NAME}_${timestamp}${FILE_EXTENSION}`;
     const filePath =
       Platform.OS === 'ios'
-        ? `${RNFS.DocumentDirectoryPath}/${fileName}`
-        : `${RNFS.DownloadDirectoryPath}/${fileName}`;
+        ? `${getDocumentPath()}/${fileName}`
+        : `${getDownloadPath()}/${fileName}`;
 
     // Write encrypted data to file
     await RNFS.writeFile(filePath, encryptedData, 'utf8');
@@ -174,9 +183,7 @@ export async function importData(
 export async function getBackupFiles(): Promise<string[]> {
   try {
     const downloadPath =
-      Platform.OS === 'ios'
-        ? RNFS.DocumentDirectoryPath
-        : RNFS.DownloadDirectoryPath;
+      Platform.OS === 'ios' ? getDocumentPath() : getDownloadPath();
 
     const files = await RNFS.readDir(downloadPath);
 
