@@ -47,27 +47,234 @@ const getDownloadPath = () => {
 };
 
 /**
- * Convert transactions to CSV format
+ * Pad string to fixed width
+ */
+function padString(
+  str: string,
+  width: number,
+  align: 'left' | 'right' = 'left',
+): string {
+  const cleanStr = str.replace(/"/g, '');
+  if (align === 'right') {
+    return cleanStr.padStart(width, ' ');
+  }
+  return cleanStr.padEnd(width, ' ');
+}
+
+/**
+ * Format number with thousand separators
+ */
+function formatNumber(num: number): string {
+  return num.toLocaleString('vi-VN');
+}
+
+/**
+ * Convert transactions to beautifully formatted CSV
  */
 function transactionsToCSV(transactions: Transaction[]): string {
-  // CSV Header
-  const header = 'Ngày,Loại,Danh mục,Số tiền,Ghi chú\n';
+  // Define column widths
+  const COL_DATE = 14;
+  const COL_TYPE = 10;
+  const COL_CATEGORY = 22;
+  const COL_AMOUNT = 20;
+  const COL_NOTE = 35;
 
-  // CSV Rows
-  const rows = transactions
-    .map(tx => {
-      const date = new Date(tx.date).toLocaleDateString('vi-VN');
-      const type = tx.type === 'income' ? 'Thu' : 'Chi';
-      const category =
-        CATEGORY_LIST.find(c => c.id === tx.category)?.label || tx.category;
-      const amount = tx.amount.toString();
-      const note = (tx.note || '').replace(/"/g, '""'); // Escape quotes
+  const totalWidth =
+    COL_DATE + COL_TYPE + COL_CATEGORY + COL_AMOUNT + COL_NOTE + 16;
 
-      return `"${date}","${type}","${category}","${amount}","${note}"`;
-    })
-    .join('\n');
+  // Create beautiful box drawing
+  const topBorder = '╭' + '─'.repeat(totalWidth - 2) + '╮';
+  const bottomBorder = '╰' + '─'.repeat(totalWidth - 2) + '╯';
+  const divider = '├' + '─'.repeat(totalWidth - 2) + '┤';
+  const thickDivider = '╞' + '═'.repeat(totalWidth - 2) + '╡';
 
-  return header + rows;
+  // Title
+  const title = 'BÁO CÁO CHI TIÊU CHI TIẾT';
+  const titlePadding = Math.floor((totalWidth - title.length - 2) / 2);
+  let csv = topBorder + '\n';
+  csv +=
+    '│' +
+    ' '.repeat(titlePadding) +
+    title +
+    ' '.repeat(totalWidth - titlePadding - title.length - 2) +
+    '│\n';
+  csv += '│' + ' '.repeat(totalWidth - 2) + '│\n';
+
+  // Date info
+  const dateInfo = `Ngày tạo: ${new Date().toLocaleDateString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })}`;
+  const datePadding = Math.floor((totalWidth - dateInfo.length - 2) / 2);
+  csv +=
+    '│' +
+    ' '.repeat(datePadding) +
+    dateInfo +
+    ' '.repeat(totalWidth - datePadding - dateInfo.length - 2) +
+    '│\n';
+  csv += thickDivider + '\n';
+
+  // Header
+  csv +=
+    '│ ' +
+    padString('NGÀY', COL_DATE) +
+    ' │ ' +
+    padString('LOẠI', COL_TYPE) +
+    ' │ ' +
+    padString('DANH MỤC', COL_CATEGORY) +
+    ' │ ' +
+    padString('SỐ TIỀN (VNĐ)', COL_AMOUNT, 'right') +
+    ' │ ' +
+    padString('GHI CHÚ', COL_NOTE) +
+    ' │\n';
+  csv += divider + '\n';
+
+  // Group transactions
+  const incomeTransactions = transactions.filter(t => t.type === 'income');
+  const expenseTransactions = transactions.filter(t => t.type === 'expense');
+
+  // Format row function
+  const formatRow = (tx: Transaction) => {
+    const date = new Date(tx.date).toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+    const type = tx.type === 'income' ? '▲ Thu' : '▼ Chi';
+    const category =
+      CATEGORY_LIST.find(c => c.id === tx.category)?.label || tx.category;
+    const amount = formatNumber(tx.amount);
+    const note =
+      (tx.note || '').slice(0, COL_NOTE - 3) +
+      ((tx.note?.length || 0) > COL_NOTE - 3 ? '...' : '');
+
+    return (
+      '│ ' +
+      padString(date, COL_DATE) +
+      ' │ ' +
+      padString(type, COL_TYPE) +
+      ' │ ' +
+      padString(category, COL_CATEGORY) +
+      ' │ ' +
+      padString(amount, COL_AMOUNT, 'right') +
+      ' │ ' +
+      padString(note, COL_NOTE) +
+      ' │'
+    );
+  };
+
+  // Income section
+  if (incomeTransactions.length > 0) {
+    const sectionTitle = `┤ THU NHẬP (${incomeTransactions.length} giao dịch) ├`;
+    const sectionPadding = Math.floor(
+      (totalWidth - sectionTitle.length - 2) / 2,
+    );
+    csv +=
+      '├' +
+      '─'.repeat(sectionPadding) +
+      sectionTitle +
+      '─'.repeat(totalWidth - sectionPadding - sectionTitle.length - 2) +
+      '┤\n';
+
+    incomeTransactions.forEach(tx => {
+      csv += formatRow(tx) + '\n';
+    });
+
+    const totalIncome = incomeTransactions.reduce(
+      (sum, t) => sum + t.amount,
+      0,
+    );
+    csv += divider + '\n';
+    csv +=
+      '│ ' +
+      padString('', COL_DATE + COL_TYPE + COL_CATEGORY + 8, 'right') +
+      padString('TỔNG THU:', 12) +
+      ' ' +
+      padString(formatNumber(totalIncome), COL_AMOUNT, 'right') +
+      '   ' +
+      padString('', COL_NOTE) +
+      ' │\n';
+  }
+
+  // Expense section
+  if (expenseTransactions.length > 0) {
+    const sectionTitle = `┤ CHI TIÊU (${expenseTransactions.length} giao dịch) ├`;
+    const sectionPadding = Math.floor(
+      (totalWidth - sectionTitle.length - 2) / 2,
+    );
+    csv +=
+      '├' +
+      '─'.repeat(sectionPadding) +
+      sectionTitle +
+      '─'.repeat(totalWidth - sectionPadding - sectionTitle.length - 2) +
+      '┤\n';
+
+    expenseTransactions.forEach(tx => {
+      csv += formatRow(tx) + '\n';
+    });
+
+    const totalExpense = expenseTransactions.reduce(
+      (sum, t) => sum + t.amount,
+      0,
+    );
+    csv += divider + '\n';
+    csv +=
+      '│ ' +
+      padString('', COL_DATE + COL_TYPE + COL_CATEGORY + 8, 'right') +
+      padString('TỔNG CHI:', 12) +
+      ' ' +
+      padString(formatNumber(totalExpense), COL_AMOUNT, 'right') +
+      '   ' +
+      padString('', COL_NOTE) +
+      ' │\n';
+  }
+
+  // Summary section
+  const totalIncome = incomeTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = expenseTransactions.reduce(
+    (sum, t) => sum + t.amount,
+    0,
+  );
+  const balance = totalIncome - totalExpense;
+
+  csv += thickDivider + '\n';
+  const summaryTitle = '┤ TỔNG KẾT ├';
+  const summaryPadding = Math.floor((totalWidth - summaryTitle.length - 2) / 2);
+  csv +=
+    '├' +
+    '─'.repeat(summaryPadding) +
+    summaryTitle +
+    '─'.repeat(totalWidth - summaryPadding - summaryTitle.length - 2) +
+    '┤\n';
+
+  csv += '│' + ' '.repeat(totalWidth - 2) + '│\n';
+  csv +=
+    '│  ' +
+    padString('◆ Tổng thu nhập:', 35) +
+    padString(formatNumber(totalIncome) + ' VNĐ', totalWidth - 39, 'right') +
+    '  │\n';
+  csv +=
+    '│  ' +
+    padString('◆ Tổng chi tiêu:', 35) +
+    padString(formatNumber(totalExpense) + ' VNĐ', totalWidth - 39, 'right') +
+    '  │\n';
+  csv += '│  ' + padString('', totalWidth - 4) + '  │\n';
+  csv +=
+    '│  ' +
+    padString('◆ Số dư:', 35, 'right') +
+    padString(formatNumber(balance) + ' VNĐ', totalWidth - 39, 'right') +
+    '  │\n';
+  csv += '│' + ' '.repeat(totalWidth - 2) + '│\n';
+  csv +=
+    '│  ' +
+    padString(`Tổng số giao dịch: ${transactions.length}`, totalWidth - 4) +
+    '  │\n';
+  csv += bottomBorder + '\n';
+
+  return csv;
 }
 
 /**
@@ -190,16 +397,20 @@ export async function exportSummaryCSV(
     }
 
     // Calculate summary by category
-    const summary: Record<string, { income: number; expense: number }> = {};
+    const summary: Record<
+      string,
+      { income: number; expense: number; count: number }
+    > = {};
 
     transactions.forEach(tx => {
       const categoryLabel =
         CATEGORY_LIST.find(c => c.id === tx.category)?.label || tx.category;
 
       if (!summary[categoryLabel]) {
-        summary[categoryLabel] = { income: 0, expense: 0 };
+        summary[categoryLabel] = { income: 0, expense: 0, count: 0 };
       }
 
+      summary[categoryLabel].count++;
       if (tx.type === 'income') {
         summary[categoryLabel].income += tx.amount;
       } else {
@@ -207,14 +418,91 @@ export async function exportSummaryCSV(
       }
     });
 
-    // Create CSV
-    let csv = 'Danh mục,Thu nhập,Chi tiêu,Chênh lệch\n';
+    // Define column widths
+    const COL_CATEGORY = 24;
+    const COL_COUNT = 10;
+    const COL_INCOME = 20;
+    const COL_EXPENSE = 20;
+    const COL_DIFF = 20;
+    const totalWidth =
+      COL_CATEGORY + COL_COUNT + COL_INCOME + COL_EXPENSE + COL_DIFF + 16;
 
-    Object.entries(summary).forEach(([category, amounts]) => {
+    // Create beautiful box
+    const topBorder = '╭' + '─'.repeat(totalWidth - 2) + '╮';
+    const bottomBorder = '╰' + '─'.repeat(totalWidth - 2) + '╯';
+    const divider = '├' + '─'.repeat(totalWidth - 2) + '┤';
+    const thickDivider = '╞' + '═'.repeat(totalWidth - 2) + '╡';
+
+    // Title
+    const title = 'BÁO CÁO TỔNG HỢP THEO DANH MỤC';
+    const titlePadding = Math.floor((totalWidth - title.length - 2) / 2);
+    let csv = topBorder + '\n';
+    csv +=
+      '│' +
+      ' '.repeat(titlePadding) +
+      title +
+      ' '.repeat(totalWidth - titlePadding - title.length - 2) +
+      '│\n';
+    csv += '│' + ' '.repeat(totalWidth - 2) + '│\n';
+
+    // Date info
+    const dateInfo = `Ngày tạo: ${new Date().toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    })}`;
+    const datePadding = Math.floor((totalWidth - dateInfo.length - 2) / 2);
+    csv +=
+      '│' +
+      ' '.repeat(datePadding) +
+      dateInfo +
+      ' '.repeat(totalWidth - datePadding - dateInfo.length - 2) +
+      '│\n';
+    csv += thickDivider + '\n';
+
+    // Header
+    csv +=
+      '│ ' +
+      padString('DANH MỤC', COL_CATEGORY) +
+      ' │ ' +
+      padString('SỐ GD', COL_COUNT, 'right') +
+      ' │ ' +
+      padString('THU (VNĐ)', COL_INCOME, 'right') +
+      ' │ ' +
+      padString('CHI (VNĐ)', COL_EXPENSE, 'right') +
+      ' │ ' +
+      padString('CHÊnh LỆCH (VNĐ)', COL_DIFF, 'right') +
+      ' │\n';
+    csv += divider + '\n';
+
+    // Rows sorted by total amount
+    const sortedCategories = Object.entries(summary).sort((a, b) => {
+      const totalA = a[1].income + a[1].expense;
+      const totalB = b[1].income + b[1].expense;
+      return totalB - totalA;
+    });
+
+    sortedCategories.forEach(([category, amounts]) => {
       const diff = amounts.income - amounts.expense;
-      csv += `"${category}","${formatCurrency(
-        amounts.income,
-      )}","${formatCurrency(amounts.expense)}","${formatCurrency(diff)}"\n`;
+      const diffSign = diff > 0 ? '+' : diff < 0 ? '-' : ' ';
+      csv +=
+        '│ ' +
+        padString(category, COL_CATEGORY) +
+        ' │ ' +
+        padString(amounts.count.toString(), COL_COUNT, 'right') +
+        ' │ ' +
+        padString(formatNumber(amounts.income), COL_INCOME, 'right') +
+        ' │ ' +
+        padString(formatNumber(amounts.expense), COL_EXPENSE, 'right') +
+        ' │ ' +
+        padString(
+          diffSign + ' ' + formatNumber(Math.abs(diff)),
+          COL_DIFF,
+          'right',
+        ) +
+        ' │\n';
     });
 
     // Add totals
@@ -225,11 +513,82 @@ export async function exportSummaryCSV(
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
     const netBalance = totalIncome - totalExpense;
+    const totalCount = transactions.length;
 
-    csv += '\n';
-    csv += `"TỔNG CỘNG","${formatCurrency(totalIncome)}","${formatCurrency(
-      totalExpense,
-    )}","${formatCurrency(netBalance)}"\n`;
+    csv += thickDivider + '\n';
+    csv +=
+      '│ ' +
+      padString('TỔNG CỘNG', COL_CATEGORY) +
+      ' │ ' +
+      padString(totalCount.toString(), COL_COUNT, 'right') +
+      ' │ ' +
+      padString(formatNumber(totalIncome), COL_INCOME, 'right') +
+      ' │ ' +
+      padString(formatNumber(totalExpense), COL_EXPENSE, 'right') +
+      ' │ ' +
+      padString(
+        (netBalance >= 0 ? '+ ' : '- ') + formatNumber(Math.abs(netBalance)),
+        COL_DIFF,
+        'right',
+      ) +
+      ' │\n';
+    csv += thickDivider + '\n';
+
+    // Statistics section
+    const statsTitle = '┤ THỐNG KÊ ├';
+    const statsPadding = Math.floor((totalWidth - statsTitle.length - 2) / 2);
+    csv +=
+      '├' +
+      '─'.repeat(statsPadding) +
+      statsTitle +
+      '─'.repeat(totalWidth - statsPadding - statsTitle.length - 2) +
+      '┤\n';
+    csv += '│' + ' '.repeat(totalWidth - 2) + '│\n';
+
+    const incomeCount = transactions.filter(t => t.type === 'income').length;
+    const expenseCount = transactions.filter(t => t.type === 'expense').length;
+    const avgIncome = incomeCount > 0 ? totalIncome / incomeCount : 0;
+    const avgExpense = expenseCount > 0 ? totalExpense / expenseCount : 0;
+
+    csv +=
+      '│  ◆ Số danh mục: ' +
+      padString(
+        Object.keys(summary).length.toString(),
+        totalWidth - 21,
+        'right',
+      ) +
+      '  │\n';
+    csv +=
+      '│  ◆ Tổng giao dịch: ' +
+      padString(totalCount.toString(), totalWidth - 24, 'right') +
+      '  │\n';
+    csv +=
+      '│    • Giao dịch thu: ' +
+      padString(incomeCount.toString(), totalWidth - 26, 'right') +
+      '  │\n';
+    csv +=
+      '│    • Giao dịch chi: ' +
+      padString(expenseCount.toString(), totalWidth - 26, 'right') +
+      '  │\n';
+    csv += '│' + ' '.repeat(totalWidth - 2) + '│\n';
+    csv +=
+      '│  ◆ Trung bình thu/GD: ' +
+      padString(
+        formatNumber(Math.round(avgIncome)) + ' VNĐ',
+        totalWidth - 29,
+        'right',
+      ) +
+      '  │\n';
+    csv +=
+      '│  ◆ Trung bình chi/GD: ' +
+      padString(
+        formatNumber(Math.round(avgExpense)) + ' VNĐ',
+        totalWidth - 29,
+        'right',
+      ) +
+      '  │\n';
+    csv += '│' + ' '.repeat(totalWidth - 2) + '│\n';
+    csv += bottomBorder + '\n';
 
     // Add BOM
     const bom = '\uFEFF';
