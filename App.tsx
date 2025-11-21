@@ -1,25 +1,36 @@
 import React, { useEffect } from 'react';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  DefaultTheme,
+  DarkTheme,
+} from '@react-navigation/native';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useThemeStore } from '@/stores/themeStore';
 import { useTransactionStore } from '@/stores/transactionStore';
+import { useReminderStore } from '@/stores/reminderStore';
 import { MainTabs } from '@/navigation/MainTabs';
 import { seedDemoDataIfNeeded } from '@/data/database';
+import { initializeNotifications } from '@/services/notificationService';
 
 function RootNavigation() {
   const { isDark, palette, initTheme } = useThemeStore();
   const loadTransactions = useTransactionStore(state => state.loadTransactions);
+  const initReminder = useReminderStore(state => state.initReminder);
 
   useEffect(() => {
     const init = async () => {
       await initTheme();
       await seedDemoDataIfNeeded();
       await loadTransactions();
+
+      // Initialize notifications
+      initializeNotifications();
+      await initReminder();
     };
     init();
-  }, [initTheme, loadTransactions]);
+  }, [initTheme, loadTransactions, initReminder]);
 
   const navigationTheme = {
     ...(isDark ? DarkTheme : DefaultTheme),

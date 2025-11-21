@@ -17,6 +17,7 @@ import { CustomModal } from '@/components/CustomModal';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { FilePickerModal } from '@/components/FilePickerModal';
 import { ExportOptionsModal } from '@/components/ExportOptionsModal';
+import { ReminderSettingsModal } from '@/components/ReminderSettingsModal';
 import { exportData, importData, shareExportedFile } from '@/utils/dataExport';
 import { exportCSV, shareCSVFile } from '@/utils/csvExport';
 
@@ -63,6 +64,7 @@ export function MoreScreen() {
     message: '',
     onConfirm: () => {},
   });
+  const [showReminderSettings, setShowReminderSettings] = useState(false);
 
   const handleExportData = async () => {
     try {
@@ -280,15 +282,8 @@ export function MoreScreen() {
     {
       icon: 'bell',
       title: 'Nhắc lịch chi tiêu',
-      subtitle: 'Đặt nhắc nhở tiết kiệm mỗi tuần',
-      onPress: () => {
-        setModalConfig({
-          title: 'Nhắc lịch',
-          message: 'Tính năng sẽ sớm khả dụng',
-          type: 'info',
-        });
-        setModalVisible(true);
-      },
+      subtitle: 'Đặt nhắc nhở hàng ngày',
+      onPress: () => setShowReminderSettings(true),
       loading: false,
     },
     {
@@ -493,6 +488,11 @@ export function MoreScreen() {
           setExportOptionsModal({ ...exportOptionsModal, visible: false });
           setDownloadInfo(null);
         }}
+      />
+
+      <ReminderSettingsModal
+        visible={showReminderSettings}
+        onClose={() => setShowReminderSettings(false)}
       />
     </ScrollView>
   );
