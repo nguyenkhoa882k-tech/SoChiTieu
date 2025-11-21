@@ -90,8 +90,8 @@ export async function exportData(
         ? `${getDocumentPath()}/${fileName}`
         : `${getDownloadPath()}/${fileName}`;
 
-    // Write encrypted data to file
-    await RNFS.writeFile(filePath, encryptedData, 'utf8');
+    // Write encrypted data to file (encryptedData is already base64 encoded)
+    await RNFS.writeFile(filePath, encryptedData, 'ascii');
 
     return {
       success: true,
@@ -143,8 +143,8 @@ export async function importData(
       };
     }
 
-    // Read encrypted file
-    const encryptedData = await RNFS.readFile(filePath, 'utf8');
+    // Read encrypted file (data is base64 encoded)
+    const encryptedData = await RNFS.readFile(filePath, 'ascii');
 
     // Decrypt data
     const jsonData = decryptData(encryptedData);

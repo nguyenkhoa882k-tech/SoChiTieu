@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useThemeStore } from '@/stores/themeStore';
 import { getBackupFiles } from '@/utils/dataExport';
@@ -23,6 +29,10 @@ export function FilePickerModal({
   useEffect(() => {
     if (visible) {
       loadFiles();
+    } else {
+      // Reset state when modal closes
+      setLoading(true);
+      setFiles([]);
     }
   }, [visible]);
 
@@ -36,26 +46,30 @@ export function FilePickerModal({
   const formatFileName = (filePath: string) => {
     const parts = filePath.split('/');
     const fileName = parts[parts.length - 1];
-    
+
     // Extract timestamp from filename (SoChiTieu_Backup_TIMESTAMP.sct)
     const match = fileName.match(/SoChiTieu_Backup_(\d+)\.sct/);
     if (match) {
       const timestamp = parseInt(match[1], 10);
       const date = new Date(timestamp);
-      return `${date.toLocaleDateString('vi-VN')} ${date.toLocaleTimeString('vi-VN')}`;
+      return `${date.toLocaleDateString('vi-VN')} ${date.toLocaleTimeString(
+        'vi-VN',
+      )}`;
     }
-    
+
     return fileName;
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <Animated.View
-        entering={FadeIn.duration(150)}
-        style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
-      >
-        <Animated.View
-          entering={SlideInDown.damping(20).stiffness(80)}
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
+      <Pressable style={styles.overlay} onPress={onCancel}>
+        <Pressable
+          onPress={e => e.stopPropagation()}
           style={[
             styles.content,
             { backgroundColor: palette.card, borderColor: palette.border },
@@ -85,49 +99,67 @@ export function FilePickerModal({
               </Text>
             </View>
           ) : (
-            <ScrollView style={styles.fileList}>
-              {files.map(filePath => (
-                <Pressable
-                  key={filePath}
-                  style={[
-                    styles.fileItem,
-                    { backgroundColor: palette.background, borderColor: palette.border },
-                  ]}
-                  onPress={() => onSelect(filePath)}
-                >
-                  <View
+            <View style={styles.fileListContainer}>
+              <ScrollView
+                style={styles.fileList}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+              >
+                {files.map(filePath => (
+                  <Pressable
+                    key={filePath}
                     style={[
-                      styles.fileIcon,
-                      { backgroundColor: `${palette.primary}15` },
+                      styles.fileItem,
+                      {
+                        backgroundColor: palette.background,
+                        borderColor: palette.border,
+                      },
                     ]}
+                    onPress={() => onSelect(filePath)}
                   >
-                    <Feather name="file" size={24} color={palette.primary} />
-                  </View>
-                  <View style={styles.fileInfo}>
-                    <Text style={[styles.fileName, { color: palette.text }]}>
-                      Sao lưu
-                    </Text>
-                    <Text style={{ color: palette.muted, fontSize: 13 }}>
-                      {formatFileName(filePath)}
-                    </Text>
-                  </View>
-                  <Feather name="chevron-right" size={20} color={palette.muted} />
-                </Pressable>
-              ))}
-            </ScrollView>
+                    <View
+                      style={[
+                        styles.fileIcon,
+                        { backgroundColor: `${palette.primary}15` },
+                      ]}
+                    >
+                      <Feather name="file" size={24} color={palette.primary} />
+                    </View>
+                    <View style={styles.fileInfo}>
+                      <Text style={[styles.fileName, { color: palette.text }]}>
+                        Sao lưu
+                      </Text>
+                      <Text style={{ color: palette.muted, fontSize: 13 }}>
+                        {formatFileName(filePath)}
+                      </Text>
+                    </View>
+                    <Feather
+                      name="chevron-right"
+                      size={20}
+                      color={palette.muted}
+                    />
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
           )}
 
           <Pressable
             style={[
               styles.cancelButton,
-              { backgroundColor: palette.background, borderColor: palette.border },
+              {
+                backgroundColor: palette.background,
+                borderColor: palette.border,
+              },
             ]}
             onPress={onCancel}
           >
-            <Text style={[styles.cancelText, { color: palette.text }]}>Huỷ</Text>
+            <Text style={[styles.cancelText, { color: palette.text }]}>
+              Huỷ
+            </Text>
           </Pressable>
-        </Animated.View>
-      </Animated.View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
@@ -135,13 +167,17 @@ export function FilePickerModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 20,
   },
   content: {
+    width: '100%',
+    maxWidth: 500,
     borderRadius: 24,
     borderWidth: 1,
-    maxHeight: '80%',
+    maxHeight: '85%',
   },
   header: {
     flexDirection: 'row',
@@ -157,8 +193,11 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 4,
   },
+  fileListContainer: {
+    flex: 1,
+    minHeight: 200,
+  },
   fileList: {
-    maxHeight: 400,
     paddingHorizontal: 20,
   },
   fileItem: {
@@ -190,6 +229,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 40,
     gap: 12,
+    minHeight: 200,
   },
   emptyText: {
     fontSize: 16,
@@ -197,7 +237,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     margin: 20,
-    marginTop: 0,
+    marginTop: 12,
     paddingVertical: 14,
     borderRadius: 16,
     borderWidth: 1,

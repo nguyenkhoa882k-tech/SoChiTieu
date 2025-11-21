@@ -98,6 +98,14 @@ export async function deleteTransaction(id: number) {
   await db.executeSql(`DELETE FROM ${TABLE_NAME} WHERE id = ?`, [id]);
 }
 
+/**
+ * Delete all transactions from database
+ */
+export async function clearAllTransactions() {
+  const db = await ensureDatabase();
+  await db.executeSql(`DELETE FROM ${TABLE_NAME}`);
+}
+
 export async function updateTransaction(
   id: number,
   updates: Partial<TransactionInput>,

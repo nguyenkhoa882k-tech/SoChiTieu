@@ -1,5 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Dimensions,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import Svg, { G, Path } from 'react-native-svg';
 import { pie, arc } from 'd3-shape';
 import Feather from 'react-native-vector-icons/Feather';
@@ -55,12 +62,34 @@ export function ReportsScreen() {
     return entries.sort((a, b) => b.value - a.value);
   }, [filteredTransactions]);
 
+  const incomeByCategory = useMemo(() => {
+    const bucket: Record<string, number> = {};
+    filteredTransactions
+      .filter(tx => tx.type === 'income')
+      .forEach(tx => {
+        bucket[tx.category] = (bucket[tx.category] ?? 0) + tx.amount;
+      });
+    const entries = Object.entries(bucket).map(([categoryId, value]) => {
+      const meta =
+        CATEGORY_LIST.find(item => item.id === categoryId) ?? CATEGORY_LIST[0];
+      return { categoryId, value, color: meta.color, label: meta.label };
+    });
+    return entries.sort((a, b) => b.value - a.value);
+  }, [filteredTransactions]);
+
   const pieSlices = pie<{ value: number }>()
     .value(d => d.value)
     .sort(null)(expenseByCategory);
-  const arcGenerator = arc<any>().innerRadius(radius * 0.45).outerRadius(radius);
+  const arcGenerator = arc<any>()
+    .innerRadius(radius * 0.45)
+    .outerRadius(radius);
+
+  const incomePieSlices = pie<{ value: number }>()
+    .value(d => d.value)
+    .sort(null)(incomeByCategory);
 
   const topExpenses = expenseByCategory.slice(0, 4);
+  const topIncomes = incomeByCategory.slice(0, 4);
 
   return (
     <ScrollView
@@ -107,7 +136,12 @@ export function ReportsScreen() {
       </View>
 
       {viewMode === 'month' && (
-        <View style={[styles.monthPicker, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View
+          style={[
+            styles.monthPicker,
+            { backgroundColor: palette.card, borderColor: palette.border },
+          ]}
+        >
           <Pressable
             style={styles.monthArrow}
             onPress={() => {
@@ -121,7 +155,7 @@ export function ReportsScreen() {
           >
             <Feather name="chevron-left" size={24} color={palette.primary} />
           </Pressable>
-          <Pressable 
+          <Pressable
             style={styles.monthDisplay}
             onPress={() => setShowMonthPicker(true)}
           >
@@ -147,7 +181,12 @@ export function ReportsScreen() {
       )}
 
       {viewMode === 'year' && (
-        <View style={[styles.monthPicker, { backgroundColor: palette.card, borderColor: palette.border }]}>
+        <View
+          style={[
+            styles.monthPicker,
+            { backgroundColor: palette.card, borderColor: palette.border },
+          ]}
+        >
           <Pressable
             style={styles.monthArrow}
             onPress={() => setSelectedYear(selectedYear - 1)}
@@ -168,10 +207,16 @@ export function ReportsScreen() {
         </View>
       )}
 
-      <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }]}
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.card, borderColor: palette.border },
+        ]}
         accessibilityRole="summary"
       >
-        <Text style={[styles.cardTitle, { color: palette.text }]}>Báo cáo chi tiêu</Text>
+        <Text style={[styles.cardTitle, { color: palette.text }]}>
+          Báo cáo chi tiêu
+        </Text>
         {expenseByCategory.length ? (
           <View style={styles.pieRow}>
             <View style={styles.chartContainer}>
@@ -212,10 +257,67 @@ export function ReportsScreen() {
         )}
       </View>
 
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.card, borderColor: palette.border },
+        ]}
+        accessibilityRole="summary"
+      >
+        <Text style={[styles.cardTitle, { color: palette.text }]}>
+          Báo cáo thu nhập
+        </Text>
+        {incomeByCategory.length ? (
+          <View style={styles.pieRow}>
+            <View style={styles.chartContainer}>
+              <Svg width={chartWidth} height={chartWidth}>
+                <G x={chartWidth / 2} y={chartWidth / 2}>
+                  {incomePieSlices.map((slice, index) => (
+                    <Path
+                      key={`income-slice-${slice.index}`}
+                      d={arcGenerator(slice) ?? undefined}
+                      fill={incomeByCategory[index]?.color ?? palette.success}
+                    />
+                  ))}
+                </G>
+              </Svg>
+            </View>
+            <View style={styles.legend}>
+              {topIncomes.map(item => (
+                <View key={item.categoryId} style={styles.legendRow}>
+                  <View
+                    style={[styles.legendDot, { backgroundColor: item.color }]}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.legendLabel, { color: palette.text }]}>
+                      {item.label}
+                    </Text>
+                    <Text style={{ color: palette.muted }}>
+                      {formatCurrency(item.value)}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : (
+          <Text style={{ color: palette.muted }}>
+            Không có dữ liệu thu nhập cho phạm vi này
+          </Text>
+        )}
+      </View>
+
       <AdBanner placement="reports" />
 
-      <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.cardTitle, { color: palette.text }]}>Xu hướng 6 tháng</Text>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.card, borderColor: palette.border },
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: palette.text }]}>
+          Xu hướng 6 tháng
+        </Text>
         <BarTrend
           data={stats.byMonth}
           successColor={palette.success}
@@ -247,7 +349,13 @@ interface BarTrendProps {
   borderColor: string;
 }
 
-function BarTrend({ data, successColor, dangerColor, textColor, borderColor }: BarTrendProps) {
+function BarTrend({
+  data,
+  successColor,
+  dangerColor,
+  textColor,
+  borderColor,
+}: BarTrendProps) {
   const maxValue = Math.max(
     ...data.map(item => Math.max(item.income, item.expense)),
     1,
@@ -261,10 +369,20 @@ function BarTrend({ data, successColor, dangerColor, textColor, borderColor }: B
         return (
           <View key={item.monthLabel} style={styles.barColumn}>
             <View style={styles.barArea}>
-              <RectBar color={successColor} height={incomeHeight} borderColor={borderColor} />
-              <RectBar color={dangerColor} height={expenseHeight} borderColor={borderColor} />
+              <RectBar
+                color={successColor}
+                height={incomeHeight}
+                borderColor={borderColor}
+              />
+              <RectBar
+                color={dangerColor}
+                height={expenseHeight}
+                borderColor={borderColor}
+              />
             </View>
-            <Text style={[styles.barLabel, { color: textColor }]}>{item.monthLabel}</Text>
+            <Text style={[styles.barLabel, { color: textColor }]}>
+              {item.monthLabel}
+            </Text>
           </View>
         );
       })}

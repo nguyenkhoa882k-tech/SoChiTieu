@@ -16,16 +16,14 @@ import { useCategoryStore } from '@/stores/categoryStore';
 import { CustomModal } from '@/components/CustomModal';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { FilePickerModal } from '@/components/FilePickerModal';
-import {
-  exportData,
-  importData,
-  shareExportedFile,
-} from '@/utils/dataExport';
+import { ExportOptionsModal } from '@/components/ExportOptionsModal';
+import { exportData, importData, shareExportedFile } from '@/utils/dataExport';
 import { exportCSV, shareCSVFile } from '@/utils/csvExport';
 
 export function MoreScreen() {
   const { palette, preference, setPreference } = useThemeStore();
-  const { transactions, importTransactions } = useTransactionStore();
+  const { transactions, importTransactions, clearAllData } =
+    useTransactionStore();
   const { customCategories, addCustomCategory } = useCategoryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalConfig, setModalConfig] = useState<{
@@ -41,6 +39,19 @@ export function MoreScreen() {
     fileName: string;
     folderPath: string;
   } | null>(null);
+  const [exportOptionsModal, setExportOptionsModal] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    filePath: string;
+    type: 'data' | 'csv';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    filePath: '',
+    type: 'data',
+  });
   const [confirmModal, setConfirmModal] = useState<{
     visible: boolean;
     title: string;
@@ -57,38 +68,21 @@ export function MoreScreen() {
     try {
       setIsExporting(true);
       const result = await exportData(transactions, customCategories);
-      
+
       if (result.success && result.filePath) {
-        // Ask user if they want to share
         const fileName = result.filePath.split('/').pop() || 'file sao lưu';
-        const folderPath = Platform.OS === 'android' ? 'Downloads' : 'Documents';
-        
+        const folderPath =
+          Platform.OS === 'android' ? 'Downloads' : 'Documents';
+
         setDownloadInfo({ fileName, folderPath });
-        
-        setConfirmModal({
+
+        setExportOptionsModal({
           visible: true,
           title: 'Xuất dữ liệu thành công',
-          message: result.message + `\n\nFile: ${fileName}\nVị trí: ${folderPath}\n\nBạn muốn làm gì với file này?`,
-          onConfirm: async () => {
-            setConfirmModal({ ...confirmModal, visible: false });
-            try {
-              await shareExportedFile(result.filePath!);
-              setModalConfig({
-                title: 'Chia sẻ thành công',
-                message: 'File sao lưu đã được chia sẻ',
-                type: 'success',
-              });
-              setModalVisible(true);
-            } catch {
-              // User cancelled share
-              setModalConfig({
-                title: 'Đã lưu file',
-                message: `File đã được lưu tại:\n${folderPath}/${fileName}`,
-                type: 'info',
-              });
-              setModalVisible(true);
-            }
-          },
+          message:
+            result.message + `\n\nFile: ${fileName}\nVị trí: ${folderPath}`,
+          filePath: result.filePath,
+          type: 'data',
         });
       } else {
         setModalConfig({
@@ -101,7 +95,8 @@ export function MoreScreen() {
     } catch (error) {
       setModalConfig({
         title: 'Lỗi',
-        message: error instanceof Error ? error.message : 'Không thể xuất dữ liệu',
+        message:
+          error instanceof Error ? error.message : 'Không thể xuất dữ liệu',
         type: 'error',
       });
       setModalVisible(true);
@@ -119,38 +114,21 @@ export function MoreScreen() {
     try {
       setIsExportingCSV(true);
       const result = await exportCSV(transactions);
-      
+
       if (result.success && result.filePath) {
-        // Show modal with 2 options: Share or Download
         const fileName = result.filePath.split('/').pop() || 'file CSV';
-        const folderPath = Platform.OS === 'android' ? 'Downloads' : 'Documents';
-        
+        const folderPath =
+          Platform.OS === 'android' ? 'Downloads' : 'Documents';
+
         setDownloadInfo({ fileName, folderPath });
-        
-        setConfirmModal({
+
+        setExportOptionsModal({
           visible: true,
           title: 'Xuất CSV thành công',
-          message: result.message + `\n\nFile: ${fileName}\nVị trí: ${folderPath}\n\nBạn muốn làm gì với file này?`,
-          onConfirm: async () => {
-            setConfirmModal({ ...confirmModal, visible: false });
-            try {
-              await shareCSVFile(result.filePath!);
-              setModalConfig({
-                title: 'Chia sẻ thành công',
-                message: 'File CSV đã được chia sẻ',
-                type: 'success',
-              });
-              setModalVisible(true);
-            } catch {
-              // User cancelled share
-              setModalConfig({
-                title: 'Đã lưu file',
-                message: `File đã được lưu tại:\n${folderPath}/${fileName}`,
-                type: 'info',
-              });
-              setModalVisible(true);
-            }
-          },
+          message:
+            result.message + `\n\nFile: ${fileName}\nVị trí: ${folderPath}`,
+          filePath: result.filePath,
+          type: 'csv',
         });
       } else {
         setModalConfig({
@@ -174,25 +152,27 @@ export function MoreScreen() {
 
   const handleFileSelected = async (filePath: string) => {
     setShowFilePicker(false);
-    
+
     try {
       setIsImporting(true);
 
       // Import data
       const result = await importData(filePath);
-      
+
       if (result.success && result.data) {
         // Confirm before importing
         setConfirmModal({
           visible: true,
           title: 'Xác nhận nhập dữ liệu',
-          message: `Tìm thấy ${result.data.transactions.length} giao dịch.\n\nDữ liệu mới sẽ được thêm vào dữ liệu hiện tại. Tiếp tục?`,
+          message: `Tìm thấy ${result.data.transactions.length} giao dịch.\n\nDữ liệu mới sẽ được merge thông minh với dữ liệu hiện có (bỏ qua trùng lặp). Tiếp tục?`,
           onConfirm: async () => {
             setConfirmModal({ ...confirmModal, visible: false });
             try {
-              // Import transactions
-              await importTransactions(result.data!.transactions);
-              
+              // Import transactions with smart merge
+              const importResult = await importTransactions(
+                result.data!.transactions,
+              );
+
               // Import custom categories if available
               if (result.data!.customCategories) {
                 for (const category of result.data!.customCategories) {
@@ -201,10 +181,10 @@ export function MoreScreen() {
                   await addCustomCategory(categoryData);
                 }
               }
-              
+
               setModalConfig({
-                title: 'Thành công',
-                message: result.message,
+                title: 'Nhập dữ liệu thành công',
+                message: `Tổng số: ${importResult.total} giao dịch\nĐã nhập: ${importResult.imported} giao dịch mới\nBỏ qua: ${importResult.skipped} giao dịch trùng`,
                 type: 'success',
               });
               setModalVisible(true);
@@ -229,13 +209,43 @@ export function MoreScreen() {
     } catch (error) {
       setModalConfig({
         title: 'Lỗi',
-        message: error instanceof Error ? error.message : 'Không thể nhập dữ liệu',
+        message:
+          error instanceof Error ? error.message : 'Không thể nhập dữ liệu',
         type: 'error',
       });
       setModalVisible(true);
     } finally {
       setIsImporting(false);
     }
+  };
+
+  const handleClearAllData = () => {
+    setConfirmModal({
+      visible: true,
+      title: 'Xóa toàn bộ dữ liệu?',
+      message:
+        'Hành động này sẽ xóa vĩnh viễn TẤT CẢ giao dịch của bạn và KHÔNG THỂ KHÔI PHỤC.\n\nBạn có chắc chắn muốn tiếp tục?',
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, visible: false });
+        try {
+          await clearAllData();
+          setModalConfig({
+            title: 'Đã xóa',
+            message: 'Tất cả dữ liệu đã được xóa thành công',
+            type: 'success',
+          });
+          setModalVisible(true);
+        } catch (error) {
+          setModalConfig({
+            title: 'Lỗi',
+            message:
+              error instanceof Error ? error.message : 'Không thể xóa dữ liệu',
+            type: 'error',
+          });
+          setModalVisible(true);
+        }
+      },
+    });
   };
 
   const shortcuts = [
@@ -259,6 +269,13 @@ export function MoreScreen() {
       subtitle: 'Gửi file qua email chỉ với 1 chạm',
       onPress: handleExportCSV,
       loading: isExportingCSV,
+    },
+    {
+      icon: 'trash-2',
+      title: 'Xóa toàn bộ dữ liệu',
+      subtitle: 'Xóa vĩnh viễn tất cả giao dịch',
+      onPress: handleClearAllData,
+      loading: false,
     },
     {
       icon: 'bell',
@@ -288,11 +305,20 @@ export function MoreScreen() {
       style={[styles.screen, { backgroundColor: palette.background }]}
       contentContainerStyle={styles.container}
     >
-      <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.cardTitle, { color: palette.text }]}>Giao diện</Text>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.card, borderColor: palette.border },
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: palette.text }]}>
+          Giao diện
+        </Text>
         <View style={styles.rowBetween}>
           <View>
-            <Text style={[styles.title, { color: palette.text }]}>Chế độ tối</Text>
+            <Text style={[styles.title, { color: palette.text }]}>
+              Chế độ tối
+            </Text>
             <Text style={{ color: palette.muted }}>Tự động theo hệ thống</Text>
           </View>
           <Switch
@@ -304,8 +330,12 @@ export function MoreScreen() {
         </View>
         <View style={styles.rowBetween}>
           <View>
-            <Text style={[styles.title, { color: palette.text }]}>Đồng bộ hệ thống</Text>
-            <Text style={{ color: palette.muted }}>Tự động áp dụng theme hệ thống</Text>
+            <Text style={[styles.title, { color: palette.text }]}>
+              Đồng bộ hệ thống
+            </Text>
+            <Text style={{ color: palette.muted }}>
+              Tự động áp dụng theme hệ thống
+            </Text>
           </View>
           <Switch
             value={preference === 'system'}
@@ -314,8 +344,15 @@ export function MoreScreen() {
         </View>
       </View>
 
-      <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.cardTitle, { color: palette.text }]}>Tiện ích</Text>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.card, borderColor: palette.border },
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: palette.text }]}>
+          Tiện ích
+        </Text>
         {shortcuts.map(item => (
           <Pressable
             key={item.title}
@@ -323,15 +360,26 @@ export function MoreScreen() {
             onPress={item.onPress}
             disabled={item.loading}
           >
-            <View style={[styles.iconWrapper, { backgroundColor: `${palette.primary}15` }]}> 
+            <View
+              style={[
+                styles.iconWrapper,
+                { backgroundColor: `${palette.primary}15` },
+              ]}
+            >
               {item.loading ? (
                 <Text style={{ color: palette.primary }}>⏳</Text>
               ) : (
-                <Feather name={item.icon as any} size={20} color={palette.primary} />
+                <Feather
+                  name={item.icon as any}
+                  size={20}
+                  color={palette.primary}
+                />
               )}
             </View>
             <View style={styles.flexFill}>
-              <Text style={[styles.title, { color: palette.text }]}>{item.title}</Text>
+              <Text style={[styles.title, { color: palette.text }]}>
+                {item.title}
+              </Text>
               <Text style={{ color: palette.muted }}>{item.subtitle}</Text>
             </View>
             <Feather name="chevron-right" size={18} color={palette.muted} />
@@ -339,10 +387,18 @@ export function MoreScreen() {
         ))}
       </View>
 
-      <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }]}>
-        <Text style={[styles.cardTitle, { color: palette.text }]}>Quảng cáo ưu đãi</Text>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.card, borderColor: palette.border },
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: palette.text }]}>
+          Quảng cáo ưu đãi
+        </Text>
         <Text style={{ color: palette.muted }}>
-          Bật quảng cáo thử nghiệm để đảm bảo tích hợp hoàn chỉnh trước khi lên store.
+          Bật quảng cáo thử nghiệm để đảm bảo tích hợp hoàn chỉnh trước khi lên
+          store.
         </Text>
       </View>
 
@@ -360,22 +416,70 @@ export function MoreScreen() {
         title={confirmModal.title}
         message={confirmModal.message}
         confirmText={
-          confirmModal.title.includes('CSV') 
-            ? 'Chia sẻ' 
+          confirmModal.title.includes('Xóa')
+            ? 'Xóa'
+            : confirmModal.title.includes('CSV')
+            ? 'Chia sẻ'
             : confirmModal.title.includes('xuất dữ liệu')
             ? 'Chia sẻ'
             : 'Nhập'
         }
-        cancelText={
-          confirmModal.title.includes('CSV') || confirmModal.title.includes('xuất')
-            ? 'Tải xuống'
-            : 'Huỷ'
-        }
+        cancelText="Huỷ"
         onConfirm={confirmModal.onConfirm}
         onCancel={() => {
           setConfirmModal({ ...confirmModal, visible: false });
-          // Show download success message when user chooses "Tải xuống"
-          if (downloadInfo && (confirmModal.title.includes('xuất') || confirmModal.title.includes('CSV'))) {
+        }}
+        type={
+          confirmModal.title.includes('Xóa')
+            ? 'danger'
+            : confirmModal.title.includes('xuất') ||
+              confirmModal.title.includes('CSV')
+            ? 'info'
+            : 'warning'
+        }
+      />
+
+      <FilePickerModal
+        visible={showFilePicker}
+        onSelect={handleFileSelected}
+        onCancel={() => setShowFilePicker(false)}
+      />
+
+      <ExportOptionsModal
+        visible={exportOptionsModal.visible}
+        title={exportOptionsModal.title}
+        message={exportOptionsModal.message}
+        onShare={async () => {
+          setExportOptionsModal({ ...exportOptionsModal, visible: false });
+          try {
+            if (exportOptionsModal.type === 'csv') {
+              await shareCSVFile(exportOptionsModal.filePath);
+            } else {
+              await shareExportedFile(exportOptionsModal.filePath);
+            }
+            setModalConfig({
+              title: 'Chia sẻ thành công',
+              message: `File ${
+                exportOptionsModal.type === 'csv' ? 'CSV' : 'sao lưu'
+              } đã được chia sẻ`,
+              type: 'success',
+            });
+            setModalVisible(true);
+          } catch {
+            // User cancelled share
+            setModalConfig({
+              title: 'Đã hủy chia sẻ',
+              message: downloadInfo
+                ? `File vẫn được lưu tại:\n${downloadInfo.folderPath}/${downloadInfo.fileName}`
+                : 'File đã được lưu',
+              type: 'info',
+            });
+            setModalVisible(true);
+          }
+        }}
+        onDownload={() => {
+          setExportOptionsModal({ ...exportOptionsModal, visible: false });
+          if (downloadInfo) {
             setModalConfig({
               title: 'Tải xuống thành công',
               message: `File đã được lưu tại:\n${downloadInfo.folderPath}/${downloadInfo.fileName}`,
@@ -385,13 +489,10 @@ export function MoreScreen() {
             setDownloadInfo(null);
           }
         }}
-        type={confirmModal.title.includes('xuất') || confirmModal.title.includes('CSV') ? 'info' : 'warning'}
-      />
-
-      <FilePickerModal
-        visible={showFilePicker}
-        onSelect={handleFileSelected}
-        onCancel={() => setShowFilePicker(false)}
+        onCancel={() => {
+          setExportOptionsModal({ ...exportOptionsModal, visible: false });
+          setDownloadInfo(null);
+        }}
       />
     </ScrollView>
   );

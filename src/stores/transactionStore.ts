@@ -5,6 +5,7 @@ import {
   fetchTransactions,
   insertTransaction,
   updateTransaction,
+  clearAllTransactions,
 } from '@/data/database';
 
 interface MonthlyStatItem {
@@ -35,7 +36,12 @@ interface TransactionState {
     updates: Partial<TransactionInput>,
   ) => Promise<Transaction | null>;
   refresh: () => Promise<void>;
-  importTransactions: (transactions: Transaction[]) => Promise<void>;
+  importTransactions: (transactions: Transaction[]) => Promise<{
+    total: number;
+    imported: number;
+    skipped: number;
+  }>;
+  clearAllData: () => Promise<void>;
 }
 
 const computeStats = (transactions: Transaction[]): TransactionStats => {
@@ -146,12 +152,52 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   },
 
   importTransactions: async (newTransactions: Transaction[]) => {
-    // Insert all transactions into database
-    for (const tx of newTransactions) {
-      const { id, ...input } = tx;
+    const existingTransactions = get().transactions;
+
+    // Create a Set of fingerprints for existing transactions
+    const existingFingerprints = new Set(
+      existingTransactions.map(
+        tx =>
+          `${tx.amount}_${tx.type}_${tx.category}_${tx.date}_${tx.note || ''}`,
+      ),
+    );
+
+    // Filter out transactions that already exist
+    const uniqueTransactions = newTransactions.filter(tx => {
+      const fingerprint = `${tx.amount}_${tx.type}_${tx.category}_${tx.date}_${
+        tx.note || ''
+      }`;
+      return !existingFingerprints.has(fingerprint);
+    });
+
+    // Only insert unique transactions
+    for (const tx of uniqueTransactions) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, createdAt, updatedAt, ...input } = tx;
       await insertTransaction(input);
     }
+
     // Reload all transactions
     await get().loadTransactions();
+
+    return {
+      total: newTransactions.length,
+      imported: uniqueTransactions.length,
+      skipped: newTransactions.length - uniqueTransactions.length,
+    };
+  },
+
+  clearAllData: async () => {
+    await clearAllTransactions();
+    set({
+      transactions: [],
+      stats: {
+        totalIncome: 0,
+        totalExpense: 0,
+        netBalance: 0,
+        byCategory: {},
+        byMonth: [],
+      },
+    });
   },
 }));

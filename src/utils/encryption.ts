@@ -8,16 +8,22 @@ const ENCRYPTION_KEY = 'SoChiTieu@2025#SecureKey!';
  */
 export function encryptData(data: string): string {
   const key = ENCRYPTION_KEY;
-  let encrypted = '';
+  const bytes: number[] = [];
 
-  for (let i = 0; i < data.length; i++) {
+  // Convert to UTF-8 bytes first
+  const utf8Data = unescape(encodeURIComponent(data));
+
+  // XOR encryption on bytes
+  for (let i = 0; i < utf8Data.length; i++) {
     // eslint-disable-next-line no-bitwise
-    const charCode = data.charCodeAt(i) ^ key.charCodeAt(i % key.length);
-    encrypted += String.fromCharCode(charCode);
+    const encryptedByte =
+      utf8Data.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+    bytes.push(encryptedByte);
   }
 
-  // Convert to base64 for safe storage/transmission
-  return base64Encode(encrypted);
+  // Convert bytes to base64-safe string
+  const binaryString = String.fromCharCode(...bytes);
+  return base64Encode(binaryString);
 }
 
 /**
@@ -26,17 +32,21 @@ export function encryptData(data: string): string {
 export function decryptData(encryptedData: string): string {
   try {
     // Decode from base64
-    const encrypted = base64Decode(encryptedData);
+    const binaryString = base64Decode(encryptedData);
     const key = ENCRYPTION_KEY;
-    let decrypted = '';
+    const bytes: number[] = [];
 
-    for (let i = 0; i < encrypted.length; i++) {
+    // XOR decryption
+    for (let i = 0; i < binaryString.length; i++) {
       // eslint-disable-next-line no-bitwise
-      const charCode = encrypted.charCodeAt(i) ^ key.charCodeAt(i % key.length);
-      decrypted += String.fromCharCode(charCode);
+      const decryptedByte =
+        binaryString.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+      bytes.push(decryptedByte);
     }
 
-    return decrypted;
+    // Convert bytes back to UTF-8 string
+    const utf8String = String.fromCharCode(...bytes);
+    return decodeURIComponent(escape(utf8String));
   } catch {
     throw new Error(
       'Không thể giải mã dữ liệu. File có thể bị hỏng hoặc không đúng định dạng.',
