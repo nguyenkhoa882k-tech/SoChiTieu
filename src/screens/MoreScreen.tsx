@@ -10,6 +10,9 @@ import {
   View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootStackParamList } from '@/navigation/MainTabs';
 import { useThemeStore } from '@/stores/themeStore';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useCategoryStore } from '@/stores/categoryStore';
@@ -21,7 +24,10 @@ import { ReminderSettingsModal } from '@/components/ReminderSettingsModal';
 import { exportData, importData, shareExportedFile } from '@/utils/dataExport';
 import { exportCSV, shareCSVFile } from '@/utils/csvExport';
 
+type NavigationProp = StackNavigationProp<RootStackParamList>;
+
 export function MoreScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const { palette, preference, setPreference } = useThemeStore();
   const { transactions, importTransactions, clearAllData } =
     useTransactionStore();
@@ -290,8 +296,35 @@ export function MoreScreen() {
       icon: 'life-buoy',
       title: 'Trung tâm hỗ trợ',
       subtitle: 'Gửi phản hồi hoặc xem hướng dẫn',
-      onPress: () => Linking.openURL('mailto:support@sochitieu.app'),
+      onPress: () => Linking.openURL('mailto:khoa882k@gmail.com'),
       loading: false,
+    },
+  ];
+
+  const reportShortcuts = [
+    {
+      icon: 'calendar',
+      title: 'Báo cáo tháng',
+      subtitle: 'Xem thu chi theo tháng',
+      onPress: () => navigation.navigate('MonthlyReport'),
+    },
+    {
+      icon: 'bar-chart-2',
+      title: 'Báo cáo năm',
+      subtitle: 'Thống kê theo năm',
+      onPress: () => navigation.navigate('YearlyReport'),
+    },
+    {
+      icon: 'pie-chart',
+      title: 'Báo cáo danh mục',
+      subtitle: 'Phân tích chi tiết theo danh mục',
+      onPress: () => navigation.navigate('CategoryReport'),
+    },
+    {
+      icon: 'trending-up',
+      title: 'Lịch sử thay đổi số dư',
+      subtitle: 'Theo dõi biến động số dư',
+      onPress: () => navigation.navigate('BalanceHistory'),
     },
   ];
 
@@ -337,6 +370,42 @@ export function MoreScreen() {
             onValueChange={state => setPreference(state ? 'system' : 'light')}
           />
         </View>
+      </View>
+
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.card, borderColor: palette.border },
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: palette.text }]}>Báo cáo</Text>
+        {reportShortcuts.map(item => (
+          <Pressable
+            key={item.title}
+            style={[styles.shortcutRow, { borderColor: palette.border }]}
+            onPress={item.onPress}
+          >
+            <View
+              style={[
+                styles.iconWrapper,
+                { backgroundColor: `${palette.primary}15` },
+              ]}
+            >
+              <Feather
+                name={item.icon as any}
+                size={20}
+                color={palette.primary}
+              />
+            </View>
+            <View style={styles.flexFill}>
+              <Text style={[styles.title, { color: palette.text }]}>
+                {item.title}
+              </Text>
+              <Text style={{ color: palette.muted }}>{item.subtitle}</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={palette.muted} />
+          </Pressable>
+        ))}
       </View>
 
       <View

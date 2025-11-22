@@ -7,6 +7,7 @@ import { useThemeStore } from '@/stores/themeStore';
 import { formatCurrency, formatDateLabel } from '@/utils/format';
 import { Transaction } from '@/types/transaction';
 import { TransactionList } from '@/components/TransactionList';
+import { EditTransactionModal } from '@/components/EditTransactionModal';
 import { AdBanner } from '@/components/AdBanner';
 
 function getMonthKey(date: Date) {
@@ -22,12 +23,12 @@ export function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().slice(0, 10),
   );
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
 
   const monthlyTransactions = useMemo(() => {
     const key = getMonthKey(monthAnchor);
-    return transactions.filter(
-      tx => tx.date.slice(0, 7) === key,
-    );
+    return transactions.filter(tx => tx.date.slice(0, 7) === key);
   }, [transactions, monthAnchor]);
 
   const dailyMap = useMemo(() => {
@@ -132,17 +133,24 @@ export function CalendarScreen() {
       />
 
       <View
-        style={[styles.summaryCard, { backgroundColor: palette.card, borderColor: palette.border }]}
+        style={[
+          styles.summaryCard,
+          { backgroundColor: palette.card, borderColor: palette.border },
+        ]}
       >
         <View style={styles.summaryColumn}>
-          <Text style={[styles.summaryLabel, { color: palette.muted }]}>Thu</Text>
+          <Text style={[styles.summaryLabel, { color: palette.muted }]}>
+            Thu
+          </Text>
           <Text style={[styles.summaryValue, { color: palette.success }]}>
             {formatCurrency(totalIncome)}
           </Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.summaryColumn}>
-          <Text style={[styles.summaryLabel, { color: palette.muted }]}>Chi</Text>
+          <Text style={[styles.summaryLabel, { color: palette.muted }]}>
+            Chi
+          </Text>
           <Text style={[styles.summaryValue, { color: palette.danger }]}>
             {formatCurrency(totalExpense)}
           </Text>
@@ -154,7 +162,20 @@ export function CalendarScreen() {
       <Text style={[styles.sectionTitle, { color: palette.text }]}>
         {`Chi tiết ${formatDateLabel(selectedDate)}`}
       </Text>
-      <TransactionList data={selectedItems} emptyLabel="Không có giao dịch trong ngày" />
+      <TransactionList
+        data={selectedItems}
+        emptyLabel="Không có giao dịch trong ngày"
+        onEdit={tx => setEditingTransaction(tx)}
+      />
+
+      <EditTransactionModal
+        visible={!!editingTransaction}
+        transaction={editingTransaction}
+        onClose={() => setEditingTransaction(null)}
+        onSuccess={() => {
+          // Refresh handled by store
+        }}
+      />
     </ScrollView>
   );
 }

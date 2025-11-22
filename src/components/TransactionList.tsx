@@ -1,9 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, View, Pressable } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Transaction } from '@/types/transaction';
 import { useThemeStore } from '@/stores/themeStore';
@@ -13,9 +9,14 @@ import { formatCurrency, formatDateLabel } from '@/utils/format';
 interface TransactionListProps {
   data: Transaction[];
   emptyLabel?: string;
+  onEdit?: (transaction: Transaction) => void;
 }
 
-export function TransactionList({ data, emptyLabel }: TransactionListProps) {
+export function TransactionList({
+  data,
+  emptyLabel,
+  onEdit,
+}: TransactionListProps) {
   const palette = useThemeStore(state => state.palette);
 
   const grouped = useMemo(() => {
@@ -47,7 +48,7 @@ export function TransactionList({ data, emptyLabel }: TransactionListProps) {
     <>
       {grouped.map(group => (
         <View key={group.date} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: palette.muted }]}> 
+          <Text style={[styles.sectionTitle, { color: palette.muted }]}>
             {formatDateLabel(group.date)}
           </Text>
           {group.items.map(tx => {
@@ -56,15 +57,24 @@ export function TransactionList({ data, emptyLabel }: TransactionListProps) {
               CATEGORY_LIST.find(category => category.id === 'others');
             const isIncome = tx.type === 'income';
             return (
-              <View
-                style={[styles.row, { backgroundColor: palette.card, borderColor: palette.border }]}
+              <Pressable
+                style={[
+                  styles.row,
+                  {
+                    backgroundColor: palette.card,
+                    borderColor: palette.border,
+                  },
+                ]}
                 key={tx.id}
+                onPress={() => onEdit?.(tx)}
               >
                 <View
                   style={[
                     styles.icon,
                     {
-                      backgroundColor: `${categoryMeta?.color ?? palette.accent}33`,
+                      backgroundColor: `${
+                        categoryMeta?.color ?? palette.accent
+                      }33`,
                     },
                   ]}
                 >
@@ -92,7 +102,7 @@ export function TransactionList({ data, emptyLabel }: TransactionListProps) {
                 >
                   {isIncome ? '+' : '-'} {formatCurrency(tx.amount)}
                 </Text>
-              </View>
+              </Pressable>
             );
           })}
         </View>

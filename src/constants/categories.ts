@@ -69,6 +69,14 @@ export const CATEGORY_LIST: CategoryMeta[] = [
 
   // KHOẢN CHI
   {
+    id: 'daily',
+    label: 'Chi tiêu hàng ngày',
+    type: 'expense',
+    icon: 'calendar',
+    color: '#E67E22',
+    description: 'Chi tiêu sinh hoạt thường ngày',
+  },
+  {
     id: 'food',
     label: 'Ăn uống',
     type: 'expense',

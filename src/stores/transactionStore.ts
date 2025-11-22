@@ -31,10 +31,11 @@ interface TransactionState {
   loadTransactions: () => Promise<void>;
   addTransaction: (input: TransactionInput) => Promise<void>;
   removeTransaction: (id: number) => Promise<void>;
-  editTransaction: (
+  updateTransaction: (
     id: number,
     updates: Partial<TransactionInput>,
   ) => Promise<Transaction | null>;
+  deleteTransaction: (id: number) => Promise<void>;
   refresh: () => Promise<void>;
   importTransactions: (transactions: Transaction[]) => Promise<{
     total: number;
@@ -135,7 +136,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     set({ transactions, stats });
   },
 
-  editTransaction: async (id: number, updates: Partial<TransactionInput>) => {
+  updateTransaction: async (id: number, updates: Partial<TransactionInput>) => {
     const updated = await updateTransaction(id, updates);
     if (updated) {
       const transactions = get().transactions.map(item =>
@@ -145,6 +146,13 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       set({ transactions, stats });
     }
     return updated;
+  },
+
+  deleteTransaction: async (id: number) => {
+    await deleteTransaction(id);
+    const transactions = get().transactions.filter(item => item.id !== id);
+    const stats = computeStats(transactions);
+    set({ transactions, stats });
   },
 
   refresh: async () => {

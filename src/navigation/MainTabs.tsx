@@ -1,5 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { View, StyleSheet, Platform } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -13,7 +14,19 @@ import { AddEntryScreen } from '@/screens/AddEntryScreen';
 import { CalendarScreen } from '@/screens/CalendarScreen';
 import { ReportsScreen } from '@/screens/ReportsScreen';
 import { MoreScreen } from '@/screens/MoreScreen';
+import { MonthlyReportScreen } from '@/screens/MonthlyReportScreen';
+import { YearlyReportScreen } from '@/screens/YearlyReportScreen';
+import { CategoryReportScreen } from '@/screens/CategoryReportScreen';
+import { BalanceHistoryScreen } from '@/screens/BalanceHistoryScreen';
 import { useThemeStore } from '@/stores/themeStore';
+
+export type RootStackParamList = {
+  MainTabs: undefined;
+  MonthlyReport: undefined;
+  YearlyReport: undefined;
+  CategoryReport: undefined;
+  BalanceHistory: undefined;
+};
 
 export type TabParamList = {
   Overview: undefined;
@@ -24,6 +37,7 @@ export type TabParamList = {
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
 
 const TAB_ICONS: Record<keyof TabParamList, string> = {
   Overview: 'home',
@@ -61,10 +75,7 @@ function AnimatedIcon({ routeName, color, size, focused }: AnimatedIconProps) {
   }, [focused]);
 
   const iconAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
+    transform: [{ translateY: translateY.value }, { scale: scale.value }],
   }));
 
   const backgroundAnimatedStyle = useAnimatedStyle(() => ({
@@ -92,7 +103,7 @@ function AnimatedIcon({ routeName, color, size, focused }: AnimatedIconProps) {
 
 const TabIcon = React.memo(AnimatedIcon);
 
-export function MainTabs() {
+function TabNavigator() {
   const palette = useThemeStore(state => state.palette);
 
   const renderIcon = React.useCallback(
@@ -119,11 +130,7 @@ export function MainTabs() {
 
   return (
     <Tab.Navigator
-      screenOptions={({
-        route,
-      }: {
-        route: { name: keyof TabParamList };
-      }) => ({
+      screenOptions={({ route }: { route: { name: keyof TabParamList } }) => ({
         headerShown: false,
         tabBarShowLabel: true,
         tabBarActiveTintColor: palette.primary,
@@ -175,6 +182,18 @@ export function MainTabs() {
         options={{ tabBarLabel: 'Khác' }}
       />
     </Tab.Navigator>
+  );
+}
+
+export function MainTabs() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={TabNavigator} />
+      <Stack.Screen name="MonthlyReport" component={MonthlyReportScreen} />
+      <Stack.Screen name="YearlyReport" component={YearlyReportScreen} />
+      <Stack.Screen name="CategoryReport" component={CategoryReportScreen} />
+      <Stack.Screen name="BalanceHistory" component={BalanceHistoryScreen} />
+    </Stack.Navigator>
   );
 }
 

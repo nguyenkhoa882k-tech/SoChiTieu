@@ -14,11 +14,13 @@ import { AnimatedStatCard } from '@/components/AnimatedStatCard';
 import { TransactionList } from '@/components/TransactionList';
 import { AdBanner } from '@/components/AdBanner';
 import { FilterSheet } from '@/components/FilterSheet';
+import { EditTransactionModal } from '@/components/EditTransactionModal';
 import { defaultFilter, TransactionFilter } from '@/types/filters';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { formatCurrency } from '@/utils/format';
 import { useThemeStore } from '@/stores/themeStore';
 import { TabParamList } from '@/navigation/MainTabs';
+import { Transaction } from '@/types/transaction';
 
 export function OverviewScreen() {
   const palette = useThemeStore(state => state.palette);
@@ -26,6 +28,8 @@ export function OverviewScreen() {
   const navigation = useNavigation<NavigationProp<TabParamList>>();
   const [filterVisible, setFilterVisible] = useState(false);
   const [filter, setFilter] = useState<TransactionFilter>(defaultFilter);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(item => {
@@ -90,7 +94,9 @@ export function OverviewScreen() {
           ]}
         >
           <View>
-            <Text style={[styles.balanceLabel, { color: palette.muted }]}>Số dư dự báo</Text>
+            <Text style={[styles.balanceLabel, { color: palette.muted }]}>
+              Số dư dự báo
+            </Text>
             <Text style={[styles.balanceValue, { color: palette.text }]}>
               {formatCurrency(stats.netBalance)}
             </Text>
@@ -105,15 +111,21 @@ export function OverviewScreen() {
         </View>
 
         <View style={styles.filterRow}>
-          <Text style={[styles.sectionTitle, { color: palette.text }]}>Hoạt động gần đây</Text>
+          <Text style={[styles.sectionTitle, { color: palette.text }]}>
+            Hoạt động gần đây
+          </Text>
           <Pressable
             style={[styles.filterButton, { borderColor: palette.border }]}
             onPress={() => setFilterVisible(true)}
           >
             <Feather name="filter" size={16} color={palette.primary} />
-            <Text style={[styles.filterText, { color: palette.primary }]}>Bộ lọc</Text>
+            <Text style={[styles.filterText, { color: palette.primary }]}>
+              Bộ lọc
+            </Text>
             {activeFilterCount ? (
-              <View style={[styles.badge, { backgroundColor: palette.primary }]}>
+              <View
+                style={[styles.badge, { backgroundColor: palette.primary }]}
+              >
                 <Text style={styles.badgeText}>{activeFilterCount}</Text>
               </View>
             ) : null}
@@ -130,6 +142,7 @@ export function OverviewScreen() {
           <TransactionList
             data={filteredTransactions}
             emptyLabel="Bắt đầu thêm giao dịch đầu tiên"
+            onEdit={tx => setEditingTransaction(tx)}
           />
         )}
       </ScrollView>
@@ -138,6 +151,14 @@ export function OverviewScreen() {
         value={filter}
         onClose={() => setFilterVisible(false)}
         onApply={next => setFilter(next)}
+      />
+      <EditTransactionModal
+        visible={!!editingTransaction}
+        transaction={editingTransaction}
+        onClose={() => setEditingTransaction(null)}
+        onSuccess={() => {
+          // Refresh handled by store
+        }}
       />
     </View>
   );
