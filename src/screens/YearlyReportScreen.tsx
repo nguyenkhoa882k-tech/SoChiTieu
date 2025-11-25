@@ -5,13 +5,15 @@ import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { formatCurrency } from '@/utils/format';
-import { AppHeader } from '@/components/AppHeader';
+
+type TabType = 'expense' | 'income' | 'total';
 
 export function YearlyReportScreen() {
   const navigation = useNavigation();
   const palette = useThemeStore(state => state.palette);
   const { transactions } = useTransactionStore();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [activeTab, setActiveTab] = useState<TabType>('expense');
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(tx => {
@@ -58,6 +60,19 @@ export function YearlyReportScreen() {
     return data;
   }, [filteredTransactions]);
 
+  const maxValue = useMemo(() => {
+    if (activeTab === 'expense') {
+      return Math.max(...monthlyData.map(d => d.expense), 1);
+    } else if (activeTab === 'income') {
+      return Math.max(...monthlyData.map(d => d.income), 1);
+    } else {
+      return Math.max(
+        ...monthlyData.map(d => Math.max(d.income, d.expense)),
+        1,
+      );
+    }
+  }, [monthlyData, activeTab]);
+
   const monthNames = [
     'Tháng 1',
     'Tháng 2',
@@ -75,7 +90,18 @@ export function YearlyReportScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: palette.background }]}>
-      <AppHeader title="Báo cáo năm" onBack={() => navigation.goBack()} />
+      <View style={styles.headerContainer}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={[styles.backButton, { backgroundColor: palette.card }]}
+        >
+          <Feather name="arrow-left" size={24} color={palette.text} />
+        </Pressable>
+        <Text style={[styles.headerTitle, { color: palette.text }]}>
+          Báo cáo năm
+        </Text>
+        <View style={{ width: 40 }} />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.yearSelector}>
           <Pressable
@@ -95,31 +121,93 @@ export function YearlyReportScreen() {
           </Pressable>
         </View>
 
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          <Pressable
+            style={[
+              styles.tab,
+              activeTab === 'expense' && {
+                backgroundColor: palette.danger,
+              },
+              { borderColor: palette.border },
+            ]}
+            onPress={() => setActiveTab('expense')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'expense' ? '#fff' : palette.text },
+              ]}
+            >
+              Chi tiêu
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.tab,
+              activeTab === 'income' && {
+                backgroundColor: palette.success,
+              },
+              { borderColor: palette.border },
+            ]}
+            onPress={() => setActiveTab('income')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'income' ? '#fff' : palette.text },
+              ]}
+            >
+              Thu nhập
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.tab,
+              activeTab === 'total' && {
+                backgroundColor: palette.primary,
+              },
+              { borderColor: palette.border },
+            ]}
+            onPress={() => setActiveTab('total')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'total' ? '#fff' : palette.text },
+              ]}
+            >
+              Tổng
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Summary Card */}
         <View
           style={[
             styles.card,
             { backgroundColor: palette.card, borderColor: palette.border },
           ]}
         >
-          <Text style={[styles.cardTitle, { color: palette.text }]}>
-            Tổng quan năm
-          </Text>
-
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted }}>Thu nhập</Text>
+              <Text style={{ color: palette.muted, fontSize: 13 }}>
+                Thu nhập
+              </Text>
               <Text style={[styles.incomeText, { color: palette.success }]}>
                 {formatCurrency(totalIncome)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted }}>Chi tiêu</Text>
+              <Text style={{ color: palette.muted, fontSize: 13 }}>
+                Chi tiêu
+              </Text>
               <Text style={[styles.expenseText, { color: palette.danger }]}>
                 {formatCurrency(totalExpense)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted }}>Số dư</Text>
+              <Text style={{ color: palette.muted, fontSize: 13 }}>Số dư</Text>
               <Text
                 style={[
                   styles.balanceText,
@@ -132,6 +220,7 @@ export function YearlyReportScreen() {
           </View>
         </View>
 
+        {/* Chart */}
         <View
           style={[
             styles.card,
@@ -139,70 +228,146 @@ export function YearlyReportScreen() {
           ]}
         >
           <Text style={[styles.cardTitle, { color: palette.text }]}>
-            Chi tiết theo tháng
+            Biểu đồ theo tháng
           </Text>
 
-          <View style={styles.monthList}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chartContainer}
+          >
             {monthlyData.map((data, index) => {
-              const hasData = data.income > 0 || data.expense > 0;
-              if (!hasData) {
-                return null;
-              }
+              const hasData =
+                activeTab === 'expense'
+                  ? data.expense > 0
+                  : activeTab === 'income'
+                  ? data.income > 0
+                  : data.income > 0 || data.expense > 0;
+
+              if (!hasData) return null;
+
               return (
-                <View
-                  key={index}
-                  style={[
-                    styles.monthRow,
-                    { borderBottomColor: palette.border },
-                  ]}
-                >
-                  <Text style={[styles.monthName, { color: palette.text }]}>
-                    {monthNames[data.month]}
-                  </Text>
-                  <View style={styles.monthStats}>
-                    <View style={styles.monthStat}>
-                      <Text style={{ color: palette.muted, fontSize: 12 }}>
-                        Thu
-                      </Text>
-                      <Text
-                        style={[styles.statValue, { color: palette.success }]}
-                      >
-                        {formatCurrency(data.income)}
-                      </Text>
-                    </View>
-                    <View style={styles.monthStat}>
-                      <Text style={{ color: palette.muted, fontSize: 12 }}>
-                        Chi
-                      </Text>
-                      <Text
-                        style={[styles.statValue, { color: palette.danger }]}
-                      >
-                        {formatCurrency(data.expense)}
-                      </Text>
-                    </View>
-                    <View style={styles.monthStat}>
-                      <Text style={{ color: palette.muted, fontSize: 12 }}>
-                        Dư
-                      </Text>
-                      <Text
+                <View key={index} style={styles.barWrapper}>
+                  <View style={styles.barContainer}>
+                    {activeTab === 'total' ? (
+                      <>
+                        <View
+                          style={[
+                            styles.bar,
+                            {
+                              height: Math.max(
+                                (data.income / maxValue) * 150,
+                                2,
+                              ),
+                              backgroundColor: palette.success,
+                            },
+                          ]}
+                        />
+                        <View
+                          style={[
+                            styles.bar,
+                            {
+                              height: Math.max(
+                                (data.expense / maxValue) * 150,
+                                2,
+                              ),
+                              backgroundColor: palette.danger,
+                              marginLeft: 4,
+                            },
+                          ]}
+                        />
+                      </>
+                    ) : (
+                      <View
                         style={[
-                          styles.statValue,
+                          styles.bar,
                           {
-                            color:
-                              data.balance >= 0
-                                ? palette.success
-                                : palette.danger,
+                            height: Math.max(
+                              ((activeTab === 'expense'
+                                ? data.expense
+                                : data.income) /
+                                maxValue) *
+                                150,
+                              2,
+                            ),
+                            backgroundColor:
+                              activeTab === 'expense'
+                                ? palette.danger
+                                : palette.success,
                           },
                         ]}
+                      />
+                    )}
+                  </View>
+                  <Text style={[styles.monthLabel, { color: palette.text }]}>
+                    T{data.month + 1}
+                  </Text>
+                  {activeTab === 'total' && (
+                    <View style={styles.amountContainer}>
+                      <Text
+                        style={[styles.amountText, { color: palette.success }]}
                       >
-                        {formatCurrency(data.balance)}
+                        {data.income > 0
+                          ? formatCurrency(data.income).replace(' ₫', '')
+                          : ''}
+                      </Text>
+                      <Text
+                        style={[styles.amountText, { color: palette.danger }]}
+                      >
+                        {data.expense > 0
+                          ? formatCurrency(data.expense).replace(' ₫', '')
+                          : ''}
                       </Text>
                     </View>
-                  </View>
+                  )}
+                  {activeTab !== 'total' && (
+                    <Text
+                      style={[
+                        styles.amountText,
+                        {
+                          color:
+                            activeTab === 'expense'
+                              ? palette.danger
+                              : palette.success,
+                        },
+                      ]}
+                    >
+                      {formatCurrency(
+                        activeTab === 'expense' ? data.expense : data.income,
+                      ).replace(' ₫', '')}
+                    </Text>
+                  )}
                 </View>
               );
             })}
-          </View>
+          </ScrollView>
+
+          {activeTab === 'total' && (
+            <View style={styles.legend}>
+              <View style={styles.legendItem}>
+                <View
+                  style={[
+                    styles.legendDot,
+                    { backgroundColor: palette.success },
+                  ]}
+                />
+                <Text style={[styles.legendText, { color: palette.text }]}>
+                  Thu nhập
+                </Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View
+                  style={[
+                    styles.legendDot,
+                    { backgroundColor: palette.danger },
+                  ]}
+                />
+                <Text style={[styles.legendText, { color: palette.text }]}>
+                  Chi tiêu
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -213,10 +378,46 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
+  },
   container: {
     padding: 20,
     paddingBottom: 40,
     gap: 16,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tab: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   yearSelector: {
     flexDirection: 'row',
@@ -254,44 +455,74 @@ const styles = StyleSheet.create({
   summaryItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   incomeText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   expenseText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   balanceText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
-  monthList: {
-    gap: 0,
+  chartContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    gap: 16,
   },
-  monthRow: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    gap: 12,
-  },
-  monthName: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  monthStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  monthStat: {
-    flex: 1,
+  barWrapper: {
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
+    minWidth: 60,
   },
-  statValue: {
-    fontSize: 14,
+  barContainer: {
+    height: 150,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  bar: {
+    width: 24,
+    borderRadius: 6,
+    minHeight: 2,
+  },
+  monthLabel: {
+    fontSize: 12,
     fontWeight: '600',
+  },
+  amountContainer: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  amountText: {
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  legend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  legendDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  legendText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
 });

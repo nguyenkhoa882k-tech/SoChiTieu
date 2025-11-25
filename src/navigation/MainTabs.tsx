@@ -17,6 +17,7 @@ import { MoreScreen } from '@/screens/MoreScreen';
 import { MonthlyReportScreen } from '@/screens/MonthlyReportScreen';
 import { YearlyReportScreen } from '@/screens/YearlyReportScreen';
 import { CategoryReportScreen } from '@/screens/CategoryReportScreen';
+import { CategoryDetailScreen } from '@/screens/CategoryDetailScreen';
 import { BalanceHistoryScreen } from '@/screens/BalanceHistoryScreen';
 import { useThemeStore } from '@/stores/themeStore';
 
@@ -25,6 +26,12 @@ export type RootStackParamList = {
   MonthlyReport: undefined;
   YearlyReport: undefined;
   CategoryReport: undefined;
+  CategoryDetail: {
+    categoryId: string;
+    categoryLabel: string;
+    categoryColor: string;
+    type: 'expense' | 'income';
+  };
   BalanceHistory: undefined;
 };
 
@@ -192,6 +199,7 @@ export function MainTabs() {
       <Stack.Screen name="MonthlyReport" component={MonthlyReportScreen} />
       <Stack.Screen name="YearlyReport" component={YearlyReportScreen} />
       <Stack.Screen name="CategoryReport" component={CategoryReportScreen} />
+      <Stack.Screen name="CategoryDetail" component={CategoryDetailScreen} />
       <Stack.Screen name="BalanceHistory" component={BalanceHistoryScreen} />
     </Stack.Navigator>
   );

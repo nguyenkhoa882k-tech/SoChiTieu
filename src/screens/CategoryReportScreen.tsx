@@ -7,8 +7,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, { G, Path } from 'react-native-svg';
-import { pie, arc } from 'd3-shape';
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '@/stores/transactionStore';
@@ -16,18 +14,18 @@ import { useThemeStore } from '@/stores/themeStore';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { formatCurrency } from '@/utils/format';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
-import { AppHeader } from '@/components/AppHeader';
 
-const chartWidth = Dimensions.get('window').width - 70;
-const radius = chartWidth / 2.5;
+const screenWidth = Dimensions.get('window').width;
 
 type ViewMode = 'month' | 'year' | 'lifetime';
+type TabType = 'expense' | 'income';
 
 export function CategoryReportScreen() {
   const navigation = useNavigation();
   const palette = useThemeStore(state => state.palette);
   const { transactions } = useTransactionStore();
   const [viewMode, setViewMode] = useState<ViewMode>('month');
+  const [activeTab, setActiveTab] = useState<TabType>('expense');
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
@@ -85,15 +83,10 @@ export function CategoryReportScreen() {
   );
   const totalIncome = incomeByCategory.reduce((sum, cat) => sum + cat.value, 0);
 
-  const expensePieSlices = pie<{ value: number }>()
-    .value(d => d.value)
-    .sort(null)(expenseByCategory);
-  const incomePieSlices = pie<{ value: number }>()
-    .value(d => d.value)
-    .sort(null)(incomeByCategory);
-  const arcGenerator = arc<any>()
-    .innerRadius(radius * 0.45)
-    .outerRadius(radius);
+  const maxValue = useMemo(() => {
+    const data = activeTab === 'expense' ? expenseByCategory : incomeByCategory;
+    return Math.max(...data.map(d => d.value), 1);
+  }, [expenseByCategory, incomeByCategory, activeTab]);
 
   const monthNames = [
     'Tháng 1',
@@ -122,7 +115,18 @@ export function CategoryReportScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: palette.background }]}>
-      <AppHeader title="Báo cáo danh mục" onBack={() => navigation.goBack()} />
+      <View style={styles.headerContainer}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={[styles.backButton, { backgroundColor: palette.card }]}
+        >
+          <Feather name="arrow-left" size={24} color={palette.text} />
+        </Pressable>
+        <Text style={[styles.headerTitle, { color: palette.text }]}>
+          Báo cáo danh mục
+        </Text>
+        <View style={{ width: 40 }} />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.modeSelector}>
           {(['month', 'year', 'lifetime'] as ViewMode[]).map(mode => (
@@ -175,7 +179,51 @@ export function CategoryReportScreen() {
           </Pressable>
         )}
 
-        {expenseByCategory.length > 0 && (
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          <Pressable
+            style={[
+              styles.tab,
+              activeTab === 'expense' && {
+                backgroundColor: palette.danger,
+              },
+              { borderColor: palette.border },
+            ]}
+            onPress={() => setActiveTab('expense')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'expense' ? '#fff' : palette.text },
+              ]}
+            >
+              Chi tiêu
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.tab,
+              activeTab === 'income' && {
+                backgroundColor: palette.success,
+              },
+              { borderColor: palette.border },
+            ]}
+            onPress={() => setActiveTab('income')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'income' ? '#fff' : palette.text },
+              ]}
+            >
+              Thu nhập
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Chart */}
+        {((activeTab === 'expense' && expenseByCategory.length > 0) ||
+          (activeTab === 'income' && incomeByCategory.length > 0)) && (
           <View
             style={[
               styles.card,
@@ -183,110 +231,156 @@ export function CategoryReportScreen() {
             ]}
           >
             <Text style={[styles.cardTitle, { color: palette.text }]}>
-              Chi tiêu theo danh mục
+              Biểu đồ theo danh mục
             </Text>
-            <Text style={[styles.totalText, { color: palette.danger }]}>
-              Tổng: {formatCurrency(totalExpense)}
-            </Text>
-            <View style={styles.chartWrapper}>
-              <Svg width={chartWidth} height={radius * 2}>
-                <G x={chartWidth / 2} y={radius}>
-                  {expensePieSlices.map((slice, index) => (
-                    <Path
-                      key={index}
-                      d={arcGenerator(slice) || ''}
-                      fill={expenseByCategory[index].color}
-                    />
-                  ))}
-                </G>
-              </Svg>
-            </View>
 
-            <View style={styles.categoryList}>
-              {expenseByCategory.map(cat => {
-                const percent = ((cat.value / totalExpense) * 100).toFixed(1);
-                return (
-                  <View key={cat.categoryId} style={styles.categoryRow}>
-                    <View style={styles.categoryInfo}>
-                      <View
-                        style={[styles.dot, { backgroundColor: cat.color }]}
-                      />
-                      <Text
-                        style={[styles.categoryLabel, { color: palette.text }]}
-                      >
-                        {cat.label}
-                      </Text>
-                    </View>
-                    <View style={styles.categoryValues}>
-                      <Text
-                        style={[styles.categoryAmount, { color: palette.text }]}
-                      >
-                        {formatCurrency(cat.value)}
-                      </Text>
-                      <Text style={{ color: palette.muted, fontSize: 12 }}>
-                        {percent}%
-                      </Text>
-                    </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chartContainer}
+            >
+              {(activeTab === 'expense'
+                ? expenseByCategory
+                : incomeByCategory
+              ).map((cat, index) => (
+                <View key={cat.categoryId} style={styles.barWrapper}>
+                  <View style={styles.barContainer}>
+                    <View
+                      style={[
+                        styles.bar,
+                        {
+                          height: Math.max((cat.value / maxValue) * 150, 2),
+                          backgroundColor: cat.color,
+                        },
+                      ]}
+                    />
                   </View>
-                );
-              })}
-            </View>
+                  <Text
+                    style={[styles.categoryLabelShort, { color: palette.text }]}
+                    numberOfLines={1}
+                  >
+                    {cat.label.length > 6
+                      ? cat.label.substring(0, 5) + '..'
+                      : cat.label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.amountText,
+                      {
+                        color:
+                          activeTab === 'expense'
+                            ? palette.danger
+                            : palette.success,
+                      },
+                    ]}
+                  >
+                    {formatCurrency(cat.value).replace(' ₫', '')}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
           </View>
         )}
 
-        {incomeByCategory.length > 0 && (
+        {/* Category List */}
+        {((activeTab === 'expense' && expenseByCategory.length > 0) ||
+          (activeTab === 'income' && incomeByCategory.length > 0)) && (
           <View
             style={[
               styles.card,
               { backgroundColor: palette.card, borderColor: palette.border },
             ]}
           >
-            <Text style={[styles.cardTitle, { color: palette.text }]}>
-              Thu nhập theo danh mục
-            </Text>
-            <Text style={[styles.totalText, { color: palette.success }]}>
-              Tổng: {formatCurrency(totalIncome)}
-            </Text>
-            <View style={styles.chartWrapper}>
-              <Svg width={chartWidth} height={radius * 2}>
-                <G x={chartWidth / 2} y={radius}>
-                  {incomePieSlices.map((slice, index) => (
-                    <Path
-                      key={index}
-                      d={arcGenerator(slice) || ''}
-                      fill={incomeByCategory[index].color}
-                    />
-                  ))}
-                </G>
-              </Svg>
+            <View style={styles.listHeader}>
+              <Text style={[styles.cardTitle, { color: palette.text }]}>
+                Chi tiết danh mục
+              </Text>
+              <Text
+                style={[
+                  styles.totalText,
+                  {
+                    color:
+                      activeTab === 'expense'
+                        ? palette.danger
+                        : palette.success,
+                  },
+                ]}
+              >
+                Tổng:{' '}
+                {formatCurrency(
+                  activeTab === 'expense' ? totalExpense : totalIncome,
+                )}
+              </Text>
             </View>
 
             <View style={styles.categoryList}>
-              {incomeByCategory.map(cat => {
-                const percent = ((cat.value / totalIncome) * 100).toFixed(1);
+              {(activeTab === 'expense'
+                ? expenseByCategory
+                : incomeByCategory
+              ).map(cat => {
+                const total =
+                  activeTab === 'expense' ? totalExpense : totalIncome;
+                const percent = ((cat.value / total) * 100).toFixed(1);
                 return (
-                  <View key={cat.categoryId} style={styles.categoryRow}>
+                  <Pressable
+                    key={cat.categoryId}
+                    style={[
+                      styles.categoryRow,
+                      { borderBottomColor: palette.border },
+                    ]}
+                    onPress={() => {
+                      (navigation as any).navigate('CategoryDetail', {
+                        categoryId: cat.categoryId,
+                        categoryLabel: cat.label,
+                        categoryColor: cat.color,
+                        type: activeTab,
+                      });
+                    }}
+                  >
                     <View style={styles.categoryInfo}>
                       <View
-                        style={[styles.dot, { backgroundColor: cat.color }]}
+                        style={[
+                          styles.categoryDot,
+                          { backgroundColor: cat.color },
+                        ]}
                       />
-                      <Text
-                        style={[styles.categoryLabel, { color: palette.text }]}
-                      >
-                        {cat.label}
-                      </Text>
+                      <View style={styles.categoryTextContainer}>
+                        <Text
+                          style={[
+                            styles.categoryLabel,
+                            { color: palette.text },
+                          ]}
+                        >
+                          {cat.label}
+                        </Text>
+                        <Text
+                          style={[styles.percentText, { color: palette.muted }]}
+                        >
+                          {percent}% của tổng
+                        </Text>
+                      </View>
                     </View>
                     <View style={styles.categoryValues}>
                       <Text
-                        style={[styles.categoryAmount, { color: palette.text }]}
+                        style={[
+                          styles.categoryAmount,
+                          {
+                            color:
+                              activeTab === 'expense'
+                                ? palette.danger
+                                : palette.success,
+                          },
+                        ]}
                       >
                         {formatCurrency(cat.value)}
                       </Text>
-                      <Text style={{ color: palette.muted, fontSize: 12 }}>
-                        {percent}%
-                      </Text>
+                      <Feather
+                        name="chevron-right"
+                        size={20}
+                        color={palette.muted}
+                      />
                     </View>
-                  </View>
+                  </Pressable>
                 );
               })}
             </View>
@@ -310,10 +404,46 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
+  },
   container: {
     padding: 20,
     paddingBottom: 40,
     gap: 16,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tab: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   modeSelector: {
     flexDirection: 'row',
@@ -353,41 +483,82 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   totalText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
-  chartWrapper: {
-    alignItems: 'center',
+  listHeader: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  chartContainer: {
     paddingVertical: 20,
+    paddingHorizontal: 10,
+    gap: 12,
+  },
+  barWrapper: {
+    alignItems: 'center',
+    gap: 6,
+    minWidth: 70,
+  },
+  barContainer: {
+    height: 150,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+  },
+  bar: {
+    width: 32,
+    borderRadius: 8,
+    minHeight: 2,
+  },
+  categoryLabelShort: {
+    fontSize: 11,
+    fontWeight: '600',
+    maxWidth: 70,
+    textAlign: 'center',
+  },
+  amountText: {
+    fontSize: 10,
+    fontWeight: '500',
   },
   categoryList: {
-    gap: 12,
+    gap: 0,
   },
   categoryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
   },
   categoryInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     flex: 1,
   },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+  categoryDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
-  categoryLabel: {
-    fontSize: 15,
-  },
-  categoryValues: {
-    alignItems: 'flex-end',
+  categoryTextContainer: {
+    flex: 1,
     gap: 4,
   },
-  categoryAmount: {
-    fontSize: 15,
+  categoryLabel: {
+    fontSize: 16,
     fontWeight: '600',
+  },
+  percentText: {
+    fontSize: 13,
+  },
+  categoryValues: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  categoryAmount: {
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

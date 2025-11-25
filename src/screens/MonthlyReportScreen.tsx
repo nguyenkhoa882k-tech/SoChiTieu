@@ -7,19 +7,17 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, { G, Path } from 'react-native-svg';
-import { pie, arc } from 'd3-shape';
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useThemeStore } from '@/stores/themeStore';
-import { CATEGORY_LIST } from '@/constants/categories';
 import { formatCurrency } from '@/utils/format';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
 import { AppHeader } from '@/components/AppHeader';
 
-const chartWidth = Dimensions.get('window').width - 70;
-const radius = chartWidth / 2.5;
+const screenWidth = Dimensions.get('window').width;
+
+type TabType = 'expense' | 'income' | 'total';
 
 export function MonthlyReportScreen() {
   const navigation = useNavigation();
@@ -29,6 +27,7 @@ export function MonthlyReportScreen() {
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('expense');
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(tx => {
@@ -53,27 +52,45 @@ export function MonthlyReportScreen() {
 
   const balance = totalIncome - totalExpense;
 
-  const expenseByCategory = useMemo(() => {
-    const bucket: Record<string, number> = {};
-    filteredTransactions
-      .filter(tx => tx.type === 'expense')
-      .forEach(tx => {
-        bucket[tx.category] = (bucket[tx.category] ?? 0) + tx.amount;
-      });
-    const entries = Object.entries(bucket).map(([categoryId, value]) => {
-      const meta =
-        CATEGORY_LIST.find(item => item.id === categoryId) ?? CATEGORY_LIST[0];
-      return { categoryId, value, color: meta.color, label: meta.label };
-    });
-    return entries.sort((a, b) => b.value - a.value);
-  }, [filteredTransactions]);
+  // Group transactions by day
+  const dailyData = useMemo(() => {
+    const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+    const data: Array<{
+      day: number;
+      income: number;
+      expense: number;
+      balance: number;
+    }> = [];
 
-  const pieSlices = pie<{ value: number }>()
-    .value(d => d.value)
-    .sort(null)(expenseByCategory);
-  const arcGenerator = arc<any>()
-    .innerRadius(radius * 0.45)
-    .outerRadius(radius);
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayTransactions = filteredTransactions.filter(tx => {
+        const date = new Date(tx.date);
+        return date.getDate() === day;
+      });
+
+      const income = dayTransactions
+        .filter(tx => tx.type === 'income')
+        .reduce((sum, tx) => sum + tx.amount, 0);
+      const expense = dayTransactions
+        .filter(tx => tx.type === 'expense')
+        .reduce((sum, tx) => sum + tx.amount, 0);
+
+      data.push({ day, income, expense, balance: income - expense });
+    }
+
+    return data;
+  }, [filteredTransactions, selectedMonth, selectedYear]);
+
+  // Calculate max value for chart scaling
+  const maxValue = useMemo(() => {
+    if (activeTab === 'expense') {
+      return Math.max(...dailyData.map(d => d.expense), 1);
+    } else if (activeTab === 'income') {
+      return Math.max(...dailyData.map(d => d.income), 1);
+    } else {
+      return Math.max(...dailyData.map(d => Math.max(d.income, d.expense)), 1);
+    }
+  }, [dailyData, activeTab]);
 
   const monthNames = [
     'Tháng 1',
@@ -92,7 +109,18 @@ export function MonthlyReportScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: palette.background }]}>
-      <AppHeader title="Báo cáo tháng" onBack={() => navigation.goBack()} />
+      <View style={styles.headerContainer}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={[styles.backButton, { backgroundColor: palette.card }]}
+        >
+          <Feather name="arrow-left" size={24} color={palette.text} />
+        </Pressable>
+        <Text style={[styles.headerTitle, { color: palette.text }]}>
+          Báo cáo tháng
+        </Text>
+        <View style={{ width: 40 }} />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
         <Pressable
           style={[
@@ -107,31 +135,93 @@ export function MonthlyReportScreen() {
           <Feather name="calendar" size={20} color={palette.primary} />
         </Pressable>
 
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          <Pressable
+            style={[
+              styles.tab,
+              activeTab === 'expense' && {
+                backgroundColor: palette.danger,
+              },
+              { borderColor: palette.border },
+            ]}
+            onPress={() => setActiveTab('expense')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'expense' ? '#fff' : palette.text },
+              ]}
+            >
+              Chi tiêu
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.tab,
+              activeTab === 'income' && {
+                backgroundColor: palette.success,
+              },
+              { borderColor: palette.border },
+            ]}
+            onPress={() => setActiveTab('income')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'income' ? '#fff' : palette.text },
+              ]}
+            >
+              Thu nhập
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.tab,
+              activeTab === 'total' && {
+                backgroundColor: palette.primary,
+              },
+              { borderColor: palette.border },
+            ]}
+            onPress={() => setActiveTab('total')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'total' ? '#fff' : palette.text },
+              ]}
+            >
+              Tổng
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Summary Card */}
         <View
           style={[
             styles.card,
             { backgroundColor: palette.card, borderColor: palette.border },
           ]}
         >
-          <Text style={[styles.cardTitle, { color: palette.text }]}>
-            Tổng quan tháng
-          </Text>
-
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted }}>Thu nhập</Text>
+              <Text style={{ color: palette.muted, fontSize: 13 }}>
+                Thu nhập
+              </Text>
               <Text style={[styles.incomeText, { color: palette.success }]}>
                 {formatCurrency(totalIncome)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted }}>Chi tiêu</Text>
+              <Text style={{ color: palette.muted, fontSize: 13 }}>
+                Chi tiêu
+              </Text>
               <Text style={[styles.expenseText, { color: palette.danger }]}>
                 {formatCurrency(totalExpense)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted }}>Số dư</Text>
+              <Text style={{ color: palette.muted, fontSize: 13 }}>Số dư</Text>
               <Text
                 style={[
                   styles.balanceText,
@@ -144,61 +234,155 @@ export function MonthlyReportScreen() {
           </View>
         </View>
 
-        {expenseByCategory.length > 0 && (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: palette.card, borderColor: palette.border },
-            ]}
-          >
-            <Text style={[styles.cardTitle, { color: palette.text }]}>
-              Chi tiêu theo danh mục
-            </Text>
-            <View style={styles.chartWrapper}>
-              <Svg width={chartWidth} height={radius * 2}>
-                <G x={chartWidth / 2} y={radius}>
-                  {pieSlices.map((slice, index) => (
-                    <Path
-                      key={index}
-                      d={arcGenerator(slice) || ''}
-                      fill={expenseByCategory[index].color}
-                    />
-                  ))}
-                </G>
-              </Svg>
-            </View>
+        {/* Chart */}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: palette.card, borderColor: palette.border },
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Biểu đồ theo ngày
+          </Text>
 
-            <View style={styles.categoryList}>
-              {expenseByCategory.map(cat => {
-                const percent = ((cat.value / totalExpense) * 100).toFixed(1);
-                return (
-                  <View key={cat.categoryId} style={styles.categoryRow}>
-                    <View style={styles.categoryInfo}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chartContainer}
+          >
+            {dailyData.map(data => {
+              const hasData =
+                activeTab === 'expense'
+                  ? data.expense > 0
+                  : activeTab === 'income'
+                  ? data.income > 0
+                  : data.income > 0 || data.expense > 0;
+
+              if (!hasData) return null;
+
+              return (
+                <View key={data.day} style={styles.barWrapper}>
+                  <View style={styles.barContainer}>
+                    {activeTab === 'total' ? (
+                      <>
+                        <View
+                          style={[
+                            styles.bar,
+                            {
+                              height: Math.max(
+                                (data.income / maxValue) * 150,
+                                2,
+                              ),
+                              backgroundColor: palette.success,
+                            },
+                          ]}
+                        />
+                        <View
+                          style={[
+                            styles.bar,
+                            {
+                              height: Math.max(
+                                (data.expense / maxValue) * 150,
+                                2,
+                              ),
+                              backgroundColor: palette.danger,
+                              marginLeft: 4,
+                            },
+                          ]}
+                        />
+                      </>
+                    ) : (
                       <View
-                        style={[styles.dot, { backgroundColor: cat.color }]}
+                        style={[
+                          styles.bar,
+                          {
+                            height: Math.max(
+                              ((activeTab === 'expense'
+                                ? data.expense
+                                : data.income) /
+                                maxValue) *
+                                150,
+                              2,
+                            ),
+                            backgroundColor:
+                              activeTab === 'expense'
+                                ? palette.danger
+                                : palette.success,
+                          },
+                        ]}
                       />
-                      <Text
-                        style={[styles.categoryLabel, { color: palette.text }]}
-                      >
-                        {cat.label}
-                      </Text>
-                    </View>
-                    <View style={styles.categoryValues}>
-                      <Text
-                        style={[styles.categoryAmount, { color: palette.text }]}
-                      >
-                        {formatCurrency(cat.value)}
-                      </Text>
-                      <Text style={{ color: palette.muted, fontSize: 12 }}>
-                        {percent}%
-                      </Text>
-                    </View>
+                    )}
                   </View>
-                );
-              })}
+                  <Text style={[styles.dayLabel, { color: palette.text }]}>
+                    {data.day}
+                  </Text>
+                  {activeTab === 'total' && (
+                    <View style={styles.amountContainer}>
+                      <Text
+                        style={[styles.amountText, { color: palette.success }]}
+                      >
+                        {data.income > 0
+                          ? formatCurrency(data.income).replace(' ₫', '')
+                          : ''}
+                      </Text>
+                      <Text
+                        style={[styles.amountText, { color: palette.danger }]}
+                      >
+                        {data.expense > 0
+                          ? formatCurrency(data.expense).replace(' ₫', '')
+                          : ''}
+                      </Text>
+                    </View>
+                  )}
+                  {activeTab !== 'total' && (
+                    <Text
+                      style={[
+                        styles.amountText,
+                        {
+                          color:
+                            activeTab === 'expense'
+                              ? palette.danger
+                              : palette.success,
+                        },
+                      ]}
+                    >
+                      {formatCurrency(
+                        activeTab === 'expense' ? data.expense : data.income,
+                      ).replace(' ₫', '')}
+                    </Text>
+                  )}
+                </View>
+              );
+            })}
+          </ScrollView>
+
+          {activeTab === 'total' && (
+            <View style={styles.legend}>
+              <View style={styles.legendItem}>
+                <View
+                  style={[
+                    styles.legendDot,
+                    { backgroundColor: palette.success },
+                  ]}
+                />
+                <Text style={[styles.legendText, { color: palette.text }]}>
+                  Thu nhập
+                </Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View
+                  style={[
+                    styles.legendDot,
+                    { backgroundColor: palette.danger },
+                  ]}
+                />
+                <Text style={[styles.legendText, { color: palette.text }]}>
+                  Chi tiêu
+                </Text>
+              </View>
             </View>
-          </View>
-        )}
+          )}
+        </View>
       </ScrollView>
 
       <MonthYearPicker
@@ -217,6 +401,27 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
+  },
   container: {
     padding: 20,
     paddingBottom: 40,
@@ -234,6 +439,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  tabsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tab: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
   card: {
     borderRadius: 24,
     padding: 20,
@@ -243,6 +463,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: '700',
+    marginBottom: 8,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -252,52 +473,74 @@ const styles = StyleSheet.create({
   summaryItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   incomeText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   expenseText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   balanceText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
-  chartWrapper: {
-    alignItems: 'center',
+  chartContainer: {
     paddingVertical: 20,
-  },
-  categoryList: {
+    paddingHorizontal: 10,
     gap: 12,
   },
-  categoryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  barWrapper: {
     alignItems: 'center',
+    gap: 8,
+    minWidth: 50,
   },
-  categoryInfo: {
+  barContainer: {
+    height: 150,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  bar: {
+    width: 20,
+    borderRadius: 6,
+    minHeight: 2,
+  },
+  dayLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  amountContainer: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  amountText: {
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  legend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    flex: 1,
+    gap: 6,
   },
-  dot: {
+  legendDot: {
     width: 12,
     height: 12,
     borderRadius: 6,
   },
-  categoryLabel: {
-    fontSize: 15,
-  },
-  categoryValues: {
-    alignItems: 'flex-end',
-    gap: 4,
-  },
-  categoryAmount: {
-    fontSize: 15,
-    fontWeight: '600',
+  legendText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
 });

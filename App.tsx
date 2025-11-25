@@ -4,7 +4,10 @@ import {
   DefaultTheme,
   DarkTheme,
 } from '@react-navigation/native';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet, LogBox } from 'react-native';
+
+// Suppress InteractionManager deprecation warning from @react-navigation/stack
+LogBox.ignoreLogs(['InteractionManager has been deprecated']);
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useThemeStore } from '@/stores/themeStore';

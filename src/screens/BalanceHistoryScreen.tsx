@@ -4,9 +4,9 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { CATEGORY_LIST } from '@/constants/categories';
 import { formatCurrency } from '@/utils/format';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
-import { AppHeader } from '@/components/AppHeader';
 
 type ViewMode = 'month' | 'year' | 'lifetime';
 
@@ -113,10 +113,18 @@ export function BalanceHistoryScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: palette.background }]}>
-      <AppHeader
-        title="Lịch sử thay đổi số dư"
-        onBack={() => navigation.goBack()}
-      />
+      <View style={styles.headerContainer}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={[styles.backButton, { backgroundColor: palette.card }]}
+        >
+          <Feather name="arrow-left" size={24} color={palette.text} />
+        </Pressable>
+        <Text style={[styles.headerTitle, { color: palette.text }]}>
+          Lịch sử số dư
+        </Text>
+        <View style={{ width: 40 }} />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.modeSelector}>
           {(['month', 'year', 'lifetime'] as ViewMode[]).map(mode => (
@@ -175,25 +183,25 @@ export function BalanceHistoryScreen() {
             { backgroundColor: palette.card, borderColor: palette.border },
           ]}
         >
-          <Text style={[styles.cardTitle, { color: palette.text }]}>
-            Tổng quan
-          </Text>
-
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted }}>Thu nhập</Text>
+              <Text style={{ color: palette.muted, fontSize: 13 }}>
+                Thu nhập
+              </Text>
               <Text style={[styles.incomeText, { color: palette.success }]}>
                 {formatCurrency(totalIncome)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted }}>Chi tiêu</Text>
+              <Text style={{ color: palette.muted, fontSize: 13 }}>
+                Chi tiêu
+              </Text>
               <Text style={[styles.expenseText, { color: palette.danger }]}>
                 {formatCurrency(totalExpense)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted }}>Số dư</Text>
+              <Text style={{ color: palette.muted, fontSize: 13 }}>Số dư</Text>
               <Text
                 style={[
                   styles.balanceText,
@@ -219,58 +227,129 @@ export function BalanceHistoryScreen() {
           </Text>
 
           {balanceHistory.length === 0 ? (
-            <Text style={{ color: palette.muted, textAlign: 'center' }}>
-              Chưa có giao dịch nào
-            </Text>
+            <View style={styles.emptyContainer}>
+              <Feather name="inbox" size={48} color={palette.muted} />
+              <Text
+                style={{
+                  color: palette.muted,
+                  textAlign: 'center',
+                  marginTop: 12,
+                }}
+              >
+                Chưa có giao dịch nào
+              </Text>
+            </View>
           ) : (
             <View style={styles.historyList}>
-              {balanceHistory.map((item, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.historyRow,
-                    { borderBottomColor: palette.border },
-                  ]}
-                >
-                  <View style={styles.historyLeft}>
-                    <Text style={[styles.historyDate, { color: palette.text }]}>
-                      {formatDate(item.date)}
-                    </Text>
-                    <Text style={{ color: palette.muted, fontSize: 12 }}>
-                      {item.note || 'Không có ghi chú'}
-                    </Text>
+              {balanceHistory.map((item, index) => {
+                const categoryInfo =
+                  CATEGORY_LIST.find(cat => cat.id === item.category) ??
+                  CATEGORY_LIST[0];
+                return (
+                  <View
+                    key={index}
+                    style={[
+                      styles.historyRow,
+                      { borderBottomColor: palette.border },
+                    ]}
+                  >
+                    <View style={styles.historyLeft}>
+                      <View style={styles.historyHeader}>
+                        <View
+                          style={[
+                            styles.iconContainer,
+                            {
+                              backgroundColor:
+                                item.type === 'income'
+                                  ? palette.success + '20'
+                                  : palette.danger + '20',
+                            },
+                          ]}
+                        >
+                          <Feather
+                            name={
+                              item.type === 'income'
+                                ? 'arrow-down-left'
+                                : 'arrow-up-right'
+                            }
+                            size={16}
+                            color={
+                              item.type === 'income'
+                                ? palette.success
+                                : palette.danger
+                            }
+                          />
+                        </View>
+                        <View style={styles.headerTextContainer}>
+                          <Text
+                            style={[
+                              styles.categoryText,
+                              { color: palette.text },
+                            ]}
+                          >
+                            {categoryInfo.label}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.historyDate,
+                              { color: palette.muted },
+                            ]}
+                          >
+                            {formatDate(item.date)}
+                          </Text>
+                        </View>
+                      </View>
+                      {item.note && (
+                        <Text
+                          style={[styles.noteText, { color: palette.muted }]}
+                          numberOfLines={2}
+                        >
+                          {item.note}
+                        </Text>
+                      )}
+                    </View>
+                    <View style={styles.historyRight}>
+                      <Text
+                        style={[
+                          styles.historyAmount,
+                          {
+                            color:
+                              item.type === 'income'
+                                ? palette.success
+                                : palette.danger,
+                          },
+                        ]}
+                      >
+                        {item.type === 'income' ? '+' : '-'}
+                        {formatCurrency(item.amount)}
+                      </Text>
+                      <View style={styles.balanceContainer}>
+                        <Text
+                          style={[
+                            styles.balanceLabel,
+                            { color: palette.muted },
+                          ]}
+                        >
+                          Số dư:
+                        </Text>
+                        <Text
+                          style={[
+                            styles.historyBalance,
+                            {
+                              color:
+                                item.balance >= 0
+                                  ? palette.success
+                                  : palette.danger,
+                            },
+                          ]}
+                        >
+                          {formatCurrency(item.balance)}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.historyRight}>
-                    <Text
-                      style={[
-                        styles.historyAmount,
-                        {
-                          color:
-                            item.type === 'income'
-                              ? palette.success
-                              : palette.danger,
-                        },
-                      ]}
-                    >
-                      {item.type === 'income' ? '+' : '-'}
-                      {formatCurrency(item.amount)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.historyBalance,
-                        {
-                          color:
-                            item.balance >= 0
-                              ? palette.success
-                              : palette.danger,
-                        },
-                      ]}
-                    >
-                      Số dư: {formatCurrency(item.balance)}
-                    </Text>
-                  </View>
-                </View>
-              ))}
+                );
+              })}
             </View>
           )}
         </View>
@@ -291,6 +370,27 @@ export function BalanceHistoryScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
   },
   container: {
     padding: 20,
@@ -342,19 +442,23 @@ const styles = StyleSheet.create({
   summaryItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   incomeText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   expenseText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   balanceText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
   },
   historyList: {
     gap: 0,
@@ -362,27 +466,60 @@ const styles = StyleSheet.create({
   historyRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
+    gap: 12,
   },
   historyLeft: {
     flex: 1,
-    gap: 4,
+    gap: 8,
   },
-  historyDate: {
-    fontSize: 14,
-    fontWeight: '600',
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  historyRight: {
-    alignItems: 'flex-end',
-    gap: 4,
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  historyAmount: {
+  headerTextContainer: {
+    flex: 1,
+    gap: 2,
+  },
+  categoryText: {
     fontSize: 15,
     fontWeight: '600',
   },
-  historyBalance: {
+  historyDate: {
     fontSize: 12,
-    fontWeight: '500',
+  },
+  noteText: {
+    fontSize: 13,
+    marginLeft: 48,
+  },
+  historyRight: {
+    alignItems: 'flex-end',
+    gap: 6,
+    justifyContent: 'center',
+  },
+  historyAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  balanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  balanceLabel: {
+    fontSize: 12,
+  },
+  historyBalance: {
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
