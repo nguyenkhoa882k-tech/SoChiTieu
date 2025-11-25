@@ -14,10 +14,7 @@ import DateTimePicker, {
 } from '@react-native-community/datetimepicker';
 import Feather from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
-import {
-  TestIds,
-  useInterstitialAd,
-} from 'react-native-google-mobile-ads';
+import { TestIds, useInterstitialAd } from 'react-native-google-mobile-ads';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useCategoryStore } from '@/stores/categoryStore';
@@ -70,18 +67,15 @@ export function AddEntryScreen() {
     }
   }, [isClosed, load]);
 
-  const availableCategories = useMemo(
-    () => {
-      const defaultCats = CATEGORY_LIST.filter(item =>
-        item.type === 'common' ? true : item.type === type,
-      );
-      const customCats = customCategories.filter(item =>
-        item.type === 'common' ? true : item.type === type,
-      );
-      return [...defaultCats, ...customCats];
-    },
-    [type, customCategories],
-  );
+  const availableCategories = useMemo(() => {
+    const defaultCats = CATEGORY_LIST.filter(item =>
+      item.type === 'common' ? true : item.type === type,
+    );
+    const customCats = customCategories.filter(item =>
+      item.type === 'common' ? true : item.type === type,
+    );
+    return [...defaultCats, ...customCats];
+  }, [type, customCategories]);
 
   const toggleActiveStyle = React.useMemo(
     () => ({
@@ -170,10 +164,7 @@ export function AddEntryScreen() {
     }
   };
 
-  const handleIosDateChange = (
-    _event: DateTimePickerEvent,
-    date?: Date,
-  ) => {
+  const handleIosDateChange = (_event: DateTimePickerEvent, date?: Date) => {
     if (date) {
       setSelectedDate(date);
     }
@@ -224,142 +215,167 @@ export function AddEntryScreen() {
   };
 
   return (
-    <ScrollView
-      style={[styles.screen, screenBackgroundStyle]}
-      contentContainerStyle={styles.scrollContent}
-    >
-      <View style={styles.toggleRow}>
-        {[
-          { key: 'expense', label: 'Khoản chi', icon: 'arrow-up-right' },
-          { key: 'income', label: 'Khoản thu', icon: 'arrow-down-left' },
-        ].map(item => {
-          const active = type === item.key;
-          const containerStyle = active
-            ? toggleActiveStyle
-            : toggleInactiveStyle;
-          const labelColorStyle = active
-            ? styles.toggleLabelActive
-            : toggleInactiveLabelStyle;
-          return (
-            <Pressable
-              key={item.key}
-              style={[styles.toggle, containerStyle]}
-              onPress={() => setType(item.key as TransactionType)}
-            >
-              <Feather
-                name={item.icon as any}
-                size={18}
-                color={active ? '#fff' : palette.text}
-              />
-              <Text style={[styles.toggleLabel, labelColorStyle]}>
-                {item.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+    <View style={[styles.screen, screenBackgroundStyle]}>
+      <View style={styles.scrollContent}>
+        <View style={styles.toggleRow}>
+          {[
+            { key: 'expense', label: 'Khoản chi', icon: 'arrow-up-right' },
+            { key: 'income', label: 'Khoản thu', icon: 'arrow-down-left' },
+          ].map(item => {
+            const active = type === item.key;
+            const containerStyle = active
+              ? toggleActiveStyle
+              : toggleInactiveStyle;
+            const labelColorStyle = active
+              ? styles.toggleLabelActive
+              : toggleInactiveLabelStyle;
+            return (
+              <Pressable
+                key={item.key}
+                style={[styles.toggle, containerStyle]}
+                onPress={() => setType(item.key as TransactionType)}
+              >
+                <Feather
+                  name={item.icon as any}
+                  size={18}
+                  color={active ? '#fff' : palette.text}
+                />
+                <Text style={[styles.toggleLabel, labelColorStyle]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
-      <AmountInput value={amount} onChangeValue={setAmount} label="Số tiền" />
+        <AmountInput value={amount} onChangeValue={setAmount} label="Số tiền" />
 
-      <Text style={[styles.label, labelMutedStyle]}>Danh mục</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryRow}>
-        {availableCategories.map(item => {
-          const active = item.id === category;
-          return (
-            <Pressable
-              key={item.id}
-              style={[
-                styles.categoryCard,
-                active ? categoryActiveStyle : categoryInactiveStyle,
-              ]}
-              onPress={() => setCategory(item.id)}
-            >
-              <Feather
-                name={item.icon as any}
-                size={18}
-                color={active ? palette.primary : palette.text}
-              />
-              <Text style={[styles.categoryText, categoryTextColorStyle]}>
-                {item.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-        <Pressable
-          style={[styles.categoryCard, styles.addCategoryCard, { borderColor: palette.primary, backgroundColor: `${palette.primary}10` }]}
-          onPress={() => setShowAddCategory(true)}
+        <Text style={[styles.label, labelMutedStyle]}>Danh mục</Text>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={styles.categoryScrollContainer}
+          contentContainerStyle={styles.categoryScroll}
         >
-          <Feather name="plus" size={18} color={palette.primary} />
-          <Text style={[styles.categoryText, { color: palette.primary }]}>
-            Thêm mới
+          {availableCategories.map(item => {
+            const active = item.id === category;
+            return (
+              <Pressable
+                key={item.id}
+                style={[
+                  styles.categoryCard,
+                  active ? categoryActiveStyle : categoryInactiveStyle,
+                ]}
+                onPress={() => setCategory(item.id)}
+              >
+                <Feather
+                  name={item.icon as any}
+                  size={16}
+                  color={active ? palette.primary : palette.text}
+                />
+                <Text
+                  style={[styles.categoryText, categoryTextColorStyle]}
+                  numberOfLines={1}
+                >
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+          <Pressable
+            style={[
+              styles.categoryCard,
+              styles.addCategoryCard,
+              {
+                borderColor: palette.primary,
+                backgroundColor: `${palette.primary}10`,
+              },
+            ]}
+            onPress={() => setShowAddCategory(true)}
+          >
+            <Feather name="plus" size={16} color={palette.primary} />
+            <Text
+              style={[styles.categoryText, { color: palette.primary }]}
+              numberOfLines={1}
+            >
+              Thêm
+            </Text>
+          </Pressable>
+        </ScrollView>
+
+        <Text style={[styles.label, labelMutedStyle]}>Ví sử dụng</Text>
+        <View style={styles.walletRow}>
+          {DEFAULT_WALLETS.map(walletName => {
+            const active = walletName === wallet;
+            return (
+              <Pressable
+                key={walletName}
+                style={[
+                  styles.walletChip,
+                  active ? walletActiveStyle : walletInactiveStyle,
+                ]}
+                onPress={() => setWallet(walletName)}
+              >
+                <Text style={[styles.walletText, walletTextColorStyle]}>
+                  {walletName}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Text style={[styles.label, labelMutedStyle]}>Ngày giao dịch</Text>
+        <Pressable
+          style={[styles.datePicker, datePickerStyle]}
+          onPress={openDatePicker}
+        >
+          <LinearGradient
+            colors={[palette.primary, palette.accent]}
+            style={styles.dateIcon}
+          >
+            <Feather name="calendar" size={18} color="#fff" />
+          </LinearGradient>
+          <Text style={[styles.dateText, dateTextColorStyle]}>
+            {formatDateLabel(selectedDate.toISOString())}
           </Text>
         </Pressable>
-      </ScrollView>
+        {Platform.OS === 'ios' && showIosPicker ? (
+          <DateTimePicker
+            mode="date"
+            value={selectedDate}
+            onChange={(event: DateTimePickerEvent, date?: Date) => {
+              handleIosDateChange(event, date);
+              setShowIosPicker(false);
+            }}
+          />
+        ) : null}
 
-      <Text style={[styles.label, labelMutedStyle]}>Ví sử dụng</Text>
-      <View style={styles.walletRow}>
-        {DEFAULT_WALLETS.map(walletName => {
-          const active = walletName === wallet;
-          return (
-            <Pressable
-              key={walletName}
-              style={[
-                styles.walletChip,
-                active ? walletActiveStyle : walletInactiveStyle,
-              ]}
-              onPress={() => setWallet(walletName)}
-            >
-              <Text style={[styles.walletText, walletTextColorStyle]}>
-                {walletName}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      <Text style={[styles.label, labelMutedStyle]}>Ngày giao dịch</Text>
-      <Pressable
-        style={[styles.datePicker, datePickerStyle]}
-        onPress={openDatePicker}
-      >
-        <LinearGradient
-          colors={[palette.primary, palette.accent]}
-          style={styles.dateIcon}
-        >
-          <Feather name="calendar" size={18} color="#fff" />
-        </LinearGradient>
-        <Text style={[styles.dateText, dateTextColorStyle]}>
-          {formatDateLabel(selectedDate.toISOString())}
-        </Text>
-      </Pressable>
-      {Platform.OS === 'ios' && showIosPicker ? (
-        <DateTimePicker
-          mode="date"
-          value={selectedDate}
-          onChange={(event: DateTimePickerEvent, date?: Date) => {
-            handleIosDateChange(event, date);
-            setShowIosPicker(false);
-          }}
+        <Text style={[styles.label, { color: palette.muted }]}>Ghi chú</Text>
+        <TextInput
+          style={[
+            styles.noteInput,
+            {
+              borderColor: palette.border,
+              color: palette.text,
+              backgroundColor: palette.card,
+            },
+          ]}
+          placeholder="Nhập ghi chú ngắn"
+          placeholderTextColor={palette.muted}
+          multiline
+          value={note}
+          onChangeText={setNote}
         />
-      ) : null}
 
-      <Text style={[styles.label, { color: palette.muted }]}>Ghi chú</Text>
-      <TextInput
-        style={[styles.noteInput, { borderColor: palette.border, color: palette.text, backgroundColor: palette.card }]}
-        placeholder="Nhập ghi chú ngắn"
-        placeholderTextColor={palette.muted}
-        multiline
-        value={note}
-        onChangeText={setNote}
-      />
-
-      <Pressable
-        style={[styles.saveButton, { backgroundColor: palette.primary }]}
-        onPress={handleSave}
-        disabled={submitting}
-      >
-        <Text style={styles.saveText}>{submitting ? 'Đang lưu...' : 'Lưu giao dịch'}</Text>
-      </Pressable>
+        <Pressable
+          style={[styles.saveButton, { backgroundColor: palette.primary }]}
+          onPress={handleSave}
+          disabled={submitting}
+        >
+          <Text style={styles.saveText}>
+            {submitting ? 'Đang lưu...' : 'Lưu giao dịch'}
+          </Text>
+        </Pressable>
+      </View>
 
       <CustomModal
         visible={modalVisible}
@@ -373,7 +389,7 @@ export function AddEntryScreen() {
       <AddCategoryModal
         visible={showAddCategory}
         onClose={() => setShowAddCategory(false)}
-        onAdd={(newCategory) => {
+        onAdd={newCategory => {
           addCustomCategory(newCategory);
           setModalConfig({
             title: 'Thành công',
@@ -383,7 +399,7 @@ export function AddEntryScreen() {
           setModalVisible(true);
         }}
       />
-    </ScrollView>
+    </View>
   );
 }
 
@@ -392,43 +408,52 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    gap: 12,
+    padding: 12,
+    gap: 6,
   },
   toggleRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
   },
   toggle: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 16,
+    gap: 5,
+    paddingVertical: 10,
+    borderRadius: 10,
     borderWidth: 1,
   },
   label: {
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: 4,
+    marginBottom: 4,
     fontWeight: '600',
+    fontSize: 12,
   },
-  categoryRow: {
-    gap: 12,
+  categoryScrollContainer: {
+    maxHeight: 150,
+  },
+  categoryScroll: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
   categoryCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 16,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    marginRight: 12,
-    gap: 6,
+    gap: 4,
+    width: '31.5%',
+    minHeight: 44,
   },
   categoryText: {
     fontWeight: '600',
+    fontSize: 11,
   },
   addCategoryCard: {
     borderStyle: 'dashed',
@@ -437,49 +462,51 @@ const styles = StyleSheet.create({
   walletRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 6,
   },
   walletChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 10,
   },
   datePicker: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
     borderWidth: 1,
-    borderRadius: 18,
-    padding: 14,
+    borderRadius: 10,
+    padding: 10,
   },
   dateIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   noteInput: {
-    borderRadius: 16,
+    borderRadius: 10,
     borderWidth: 1,
-    minHeight: 100,
-    padding: 14,
+    minHeight: 60,
+    padding: 10,
     textAlignVertical: 'top',
+    fontSize: 13,
   },
   saveButton: {
-    marginTop: 20,
-    paddingVertical: 16,
-    borderRadius: 20,
+    marginTop: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   saveText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 14,
   },
   toggleLabel: {
     fontWeight: '600',
+    fontSize: 12,
   },
   toggleLabelActive: {
     color: '#fff',

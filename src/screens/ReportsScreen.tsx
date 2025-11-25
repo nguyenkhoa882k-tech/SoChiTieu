@@ -207,6 +207,8 @@ export function ReportsScreen() {
         </View>
       )}
 
+      <AdBanner placement="reports" />
+
       <View
         style={[
           styles.card,
@@ -306,8 +308,6 @@ export function ReportsScreen() {
           </Text>
         )}
       </View>
-
-      <AdBanner placement="reports" />
 
       <View
         style={[
@@ -409,62 +409,63 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 20,
-    paddingBottom: 120,
-    gap: 16,
+    padding: 16,
+    paddingBottom: 100,
+    gap: 8,
   },
   filterRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 12,
     borderWidth: 1,
   },
   filterLabel: {
     fontWeight: '600',
+    fontSize: 13,
   },
   monthPicker: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    padding: 12,
+    padding: 10,
   },
   monthArrow: {
-    padding: 8,
+    padding: 6,
   },
   monthDisplay: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
   },
   monthText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   card: {
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 16,
+    padding: 16,
     borderWidth: 1,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   pieRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -474,20 +475,21 @@ const styles = StyleSheet.create({
   },
   legend: {
     flex: 1,
-    gap: 12,
+    gap: 10,
   },
   legendRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   legendDot: {
-    width: 12,
-    height: 12,
+    width: 10,
+    height: 10,
     borderRadius: 999,
   },
   legendLabel: {
     fontWeight: '600',
+    fontSize: 13,
   },
   barWrapper: {
     flexDirection: 'row',
@@ -496,20 +498,20 @@ const styles = StyleSheet.create({
   },
   barColumn: {
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
   },
   barArea: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 6,
+    gap: 5,
   },
   barLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   rectBar: {
-    width: 18,
-    borderRadius: 8,
+    width: 16,
+    borderRadius: 6,
     borderWidth: 1,
   },
 });

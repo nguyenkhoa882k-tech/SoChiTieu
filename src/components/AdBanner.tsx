@@ -23,17 +23,20 @@ export function AdBanner({ placement = 'overview' }: AdBannerProps) {
   });
 
   return (
-    <View 
+    <View
       style={[
-        styles.container, 
-        { 
+        styles.container,
+        {
           backgroundColor: palette.card,
           borderColor: palette.border,
-        }
+        },
       ]}
       accessibilityLabel={`Ad banner ${placement}`}
     >
-      <BannerAd unitId={adUnitId!} size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />
+      <BannerAd
+        unitId={adUnitId!}
+        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+      />
     </View>
   );
 }
@@ -45,7 +48,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
-    marginVertical: 16,
+    marginVertical: 6,
     elevation: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },

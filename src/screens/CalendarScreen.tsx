@@ -185,9 +185,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 20,
-    paddingBottom: 120,
-    gap: 16,
+    padding: 16,
+    paddingBottom: 100,
+    gap: 12,
   },
   monthHeader: {
     flexDirection: 'row',
@@ -195,18 +195,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   monthTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   monthButton: {
-    padding: 8,
-    borderRadius: 12,
+    padding: 6,
+    borderRadius: 10,
     borderWidth: 1,
   },
   summaryCard: {
-    marginTop: 8,
-    borderRadius: 24,
-    padding: 24,
+    marginTop: 6,
+    borderRadius: 16,
+    padding: 18,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -216,25 +216,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   summaryLabel: {
-    fontSize: 14,
+    fontSize: 12,
     textTransform: 'uppercase',
   },
   summaryValue: {
-    marginTop: 6,
-    fontSize: 22,
+    marginTop: 4,
+    fontSize: 18,
     fontWeight: '700',
   },
   divider: {
     width: 1,
-    height: 40,
+    height: 32,
     backgroundColor: '#E2E8F0',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   calendar: {
-    borderRadius: 24,
+    borderRadius: 16,
     overflow: 'hidden',
   },
 });
