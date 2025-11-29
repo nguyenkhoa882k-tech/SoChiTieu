@@ -30,13 +30,18 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
 
   setEnabled: async (enabled: boolean) => {
     const { hour, minute } = get();
-    set({ enabled });
 
     if (enabled) {
-      scheduleDailyReminder(hour, minute);
+      const success = await scheduleDailyReminder(hour, minute);
+      if (!success) {
+        // If permission was denied, don't enable
+        return;
+      }
     } else {
       cancelDailyReminder();
     }
+
+    set({ enabled });
 
     // Save to storage
     const settings: ReminderSettings = { enabled, hour, minute };

@@ -1,6 +1,66 @@
 // @ts-ignore - react-native-push-notification doesn't have types
 import PushNotification, { Importance } from 'react-native-push-notification';
-import { Platform } from 'react-native';
+import { Platform, PermissionsAndroid, Alert } from 'react-native';
+
+// Request notification permission for Android 13+
+export const requestNotificationPermission = async (): Promise<boolean> => {
+  if (Platform.OS === 'android') {
+    if (Platform.Version >= 33) {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+          {
+            title: 'Quyền thông báo',
+            message: 'Ứng dụng cần quyền để gửi thông báo nhắc nhở hàng ngày',
+            buttonNeutral: 'Hỏi lại sau',
+            buttonNegative: 'Từ chối',
+            buttonPositive: 'Đồng ý',
+          },
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.warn('Permission request error:', err);
+        return false;
+      }
+    }
+    return true; // Android < 13 doesn't need runtime permission
+  } else if (Platform.OS === 'ios') {
+    // For iOS, request permissions through PushNotification
+    return new Promise(resolve => {
+      PushNotification.requestPermissions(['alert', 'badge', 'sound']).then(
+        (permissions: any) => {
+          resolve(permissions.alert === 1);
+        },
+      );
+    });
+  }
+  return true;
+};
+
+// Check if notification permission is granted
+export const checkNotificationPermission = async (): Promise<boolean> => {
+  if (Platform.OS === 'android') {
+    if (Platform.Version >= 33) {
+      try {
+        const granted = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        );
+        return granted;
+      } catch (err) {
+        console.warn('Permission check error:', err);
+        return false;
+      }
+    }
+    return true;
+  } else if (Platform.OS === 'ios') {
+    return new Promise(resolve => {
+      PushNotification.checkPermissions((permissions: any) => {
+        resolve(permissions.alert === 1);
+      });
+    });
+  }
+  return true;
+};
 
 // Create notification channel for Android
 export const createNotificationChannel = () => {
@@ -54,7 +114,20 @@ export const initializeNotifications = () => {
 };
 
 // Schedule daily reminder
-export const scheduleDailyReminder = (hour: number, minute: number) => {
+export const scheduleDailyReminder = async (hour: number, minute: number) => {
+  // Check and request permission first
+  const hasPermission = await checkNotificationPermission();
+  if (!hasPermission) {
+    const granted = await requestNotificationPermission();
+    if (!granted) {
+      Alert.alert(
+        'Không có quyền thông báo',
+        'Vui lòng cấp quyền thông báo trong cài đặt để nhận nhắc nhở hàng ngày',
+      );
+      return false;
+    }
+  }
+
   // Cancel existing reminders first
   cancelDailyReminder();
 
@@ -82,6 +155,7 @@ export const scheduleDailyReminder = (hour: number, minute: number) => {
   });
 
   console.log(`Reminder scheduled for ${hour}:${minute} daily`);
+  return true;
 };
 
 // Cancel daily reminder
@@ -91,7 +165,20 @@ export const cancelDailyReminder = () => {
 };
 
 // Send immediate test notification
-export const sendTestNotification = () => {
+export const sendTestNotification = async () => {
+  // Check and request permission first
+  const hasPermission = await checkNotificationPermission();
+  if (!hasPermission) {
+    const granted = await requestNotificationPermission();
+    if (!granted) {
+      Alert.alert(
+        'Không có quyền thông báo',
+        'Vui lòng cấp quyền thông báo trong cài đặt để nhận thông báo',
+      );
+      return;
+    }
+  }
+
   PushNotification.localNotification({
     channelId: 'daily-reminder',
     title: '💰 Thử nghiệm thông báo',
@@ -101,14 +188,16 @@ export const sendTestNotification = () => {
     vibrate: true,
     vibration: 300,
   });
+
+  console.log('Test notification sent');
 };
 
-// Check notification permissions (iOS)
+// Check notification permissions (iOS) - Deprecated, use checkNotificationPermission
 export const checkPermissions = (callback: (permissions: any) => void) => {
   PushNotification.checkPermissions(callback);
 };
 
-// Request permissions (iOS)
+// Request permissions (iOS) - Deprecated, use requestNotificationPermission
 export const requestPermissions = () => {
   PushNotification.requestPermissions();
 };

@@ -8,12 +8,17 @@ import {
   Text,
   View,
   Platform,
+  Alert,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Feather from 'react-native-vector-icons/Feather';
 import { useThemeStore } from '@/stores/themeStore';
 import { useReminderStore } from '@/stores/reminderStore';
-import { sendTestNotification } from '@/services/notificationService';
+import {
+  sendTestNotification,
+  requestNotificationPermission,
+  checkNotificationPermission,
+} from '@/services/notificationService';
 
 interface ReminderSettingsModalProps {
   visible: boolean;
@@ -29,6 +34,22 @@ export function ReminderSettingsModal({
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const handleToggle = async (value: boolean) => {
+    if (value) {
+      // Check if we have permission
+      const hasPermission = await checkNotificationPermission();
+      if (!hasPermission) {
+        // Request permission
+        const granted = await requestNotificationPermission();
+        if (!granted) {
+          Alert.alert(
+            'Không có quyền thông báo',
+            'Vui lòng cấp quyền thông báo trong cài đặt để nhận nhắc nhở hàng ngày',
+            [{ text: 'OK' }],
+          );
+          return;
+        }
+      }
+    }
     await setEnabled(value);
   };
 
@@ -40,6 +61,10 @@ export function ReminderSettingsModal({
       const newMinute = selectedDate.getMinutes();
       await setTime(newHour, newMinute);
     }
+  };
+
+  const handleTestNotification = async () => {
+    await sendTestNotification();
   };
 
   const formatTime = (h: number, m: number) => {
@@ -144,34 +169,38 @@ export function ReminderSettingsModal({
               </Text>
             </Pressable>
 
-            {/* Test Notification */}
-            <Pressable
-              style={[
-                styles.row,
-                { borderColor: palette.border, borderBottomWidth: 0 },
-              ]}
-              onPress={sendTestNotification}
-            >
-              <View style={styles.rowLeft}>
-                <View
-                  style={[
-                    styles.iconBox,
-                    { backgroundColor: `${palette.success}15` },
-                  ]}
-                >
-                  <Feather name="send" size={20} color={palette.success} />
+            {/* Test Notification - Only in DEV mode */}
+            {__DEV__ && (
+              <Pressable
+                style={[
+                  styles.row,
+                  { borderColor: palette.border, borderBottomWidth: 0 },
+                ]}
+                onPress={handleTestNotification}
+              >
+                <View style={styles.rowLeft}>
+                  <View
+                    style={[
+                      styles.iconBox,
+                      { backgroundColor: `${palette.success}15` },
+                    ]}
+                  >
+                    <Feather name="send" size={20} color={palette.success} />
+                  </View>
+                  <View>
+                    <Text style={[styles.rowTitle, { color: palette.text }]}>
+                      Gửi thông báo thử
+                    </Text>
+                    <Text
+                      style={[styles.rowSubtitle, { color: palette.muted }]}
+                    >
+                      Kiểm tra thông báo hoạt động
+                    </Text>
+                  </View>
                 </View>
-                <View>
-                  <Text style={[styles.rowTitle, { color: palette.text }]}>
-                    Gửi thông báo thử
-                  </Text>
-                  <Text style={[styles.rowSubtitle, { color: palette.muted }]}>
-                    Kiểm tra thông báo hoạt động
-                  </Text>
-                </View>
-              </View>
-              <Feather name="chevron-right" size={20} color={palette.muted} />
-            </Pressable>
+                <Feather name="chevron-right" size={20} color={palette.muted} />
+              </Pressable>
+            )}
 
             {/* Info box */}
             <View

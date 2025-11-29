@@ -16,6 +16,12 @@ interface AdBannerProps {
 
 export function AdBanner({ placement = 'overview' }: AdBannerProps) {
   const palette = useThemeStore(state => state.palette);
+
+  // Only show ads in DEV mode
+  if (!__DEV__) {
+    return null;
+  }
+
   const adUnitId = Platform.select({
     ios: IOS_TEST_ID,
     android: ANDROID_TEST_ID,

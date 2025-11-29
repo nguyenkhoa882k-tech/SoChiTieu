@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Calendar, DateObject } from 'react-native-calendars';
+import { Calendar } from 'react-native-calendars';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useThemeStore } from '@/stores/themeStore';
@@ -128,6 +128,9 @@ export function CalendarScreen() {
           dayTextColor: palette.text,
           monthTextColor: palette.text,
           todayTextColor: palette.secondary,
+          textDayFontSize: 14,
+          textMonthFontSize: 15,
+          textDayHeaderFontSize: 12,
         }}
         style={styles.calendar}
       />
