@@ -61,7 +61,7 @@ export function OverviewScreen() {
   }, [filter]);
 
   return (
-    <View style={[styles.container, { backgroundColor: palette.background }]}>
+    <View style={[styles.screen, { backgroundColor: palette.background }]}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -105,8 +105,8 @@ export function OverviewScreen() {
             style={[styles.addButton, { backgroundColor: palette.primary }]}
             onPress={() => navigation.navigate('AddEntry' as never)}
           >
-            <Feather name="plus" size={20} color="#fff" />
-            <Text style={styles.addButtonText}>Thêm thu chi</Text>
+            <Feather name="plus" size={18} color="#fff" />
+            <Text style={styles.addButtonText}>Thêm</Text>
           </Pressable>
         </View>
 
@@ -118,7 +118,7 @@ export function OverviewScreen() {
             style={[styles.filterButton, { borderColor: palette.border }]}
             onPress={() => setFilterVisible(true)}
           >
-            <Feather name="filter" size={16} color={palette.primary} />
+            <Feather name="filter" size={14} color={palette.primary} />
             <Text style={[styles.filterText, { color: palette.primary }]}>
               Bộ lọc
             </Text>
@@ -141,7 +141,7 @@ export function OverviewScreen() {
         ) : (
           <TransactionList
             data={filteredTransactions}
-            emptyLabel="Bắt đầu thêm giao dịch đầu tiên"
+            emptyLabel="Chưa có giao dịch"
             onEdit={tx => setEditingTransaction(tx)}
           />
         )}
@@ -165,69 +165,73 @@ export function OverviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
+  },
+  scrollContent: {
+    padding: 12,
+    paddingBottom: 80,
   },
   statRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
     marginBottom: 4,
   },
   balanceCard: {
-    marginTop: 12,
-    marginBottom: 8,
-    padding: 18,
-    borderRadius: 16,
+    marginTop: 10,
+    marginBottom: 6,
+    padding: 14,
+    borderRadius: 12,
     borderWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
   },
   balanceLabel: {
     textTransform: 'uppercase',
-    fontSize: 10,
-    letterSpacing: 1,
+    fontSize: 9,
+    letterSpacing: 0.8,
     fontWeight: '700',
     opacity: 0.7,
   },
   balanceValue: {
-    marginTop: 6,
-    fontSize: 19,
+    marginTop: 4,
+    fontSize: 16,
     fontWeight: '800',
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
-    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    gap: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
   },
   addButtonText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '800',
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
   },
   filterRow: {
-    marginTop: 16,
-    marginBottom: 12,
+    marginTop: 12,
+    marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -235,33 +239,29 @@ const styles = StyleSheet.create({
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 16,
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
     borderWidth: 1.5,
   },
   filterText: {
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 11,
   },
   badge: {
-    minWidth: 18,
-    height: 18,
+    minWidth: 16,
+    height: 16,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
   },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
   loading: {
-    marginVertical: 24,
+    marginVertical: 20,
   },
 });

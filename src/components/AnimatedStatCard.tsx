@@ -56,8 +56,10 @@ export function AnimatedStatCard({
         },
       ]}
     >
-      <View style={[styles.iconWrapper, { backgroundColor: colorMap[variant] }]}>
-        <Feather name={icon as any} size={20} color="#fff" />
+      <View
+        style={[styles.iconWrapper, { backgroundColor: colorMap[variant] }]}
+      >
+        <Feather name={icon as any} size={16} color="#fff" />
       </View>
       <Text style={[styles.label, { color: palette.muted }]}>{label}</Text>
       <Text style={[styles.value, { color: palette.text }]}>
@@ -73,29 +75,29 @@ export function AnimatedStatCard({
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    padding: 16,
-    borderRadius: 16,
+    padding: 12,
+    borderRadius: 12,
     borderWidth: 1,
   },
   iconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   label: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '500',
   },
   value: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
-    marginTop: 4,
+    marginTop: 3,
   },
   hint: {
-    marginTop: 4,
-    fontSize: 12,
+    marginTop: 3,
+    fontSize: 10,
   },
 });

@@ -1,17 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { formatCurrency } from '@/utils/format';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { SummaryCard } from '@/components/SummaryCard';
+import { TabSelector } from '@/components/TabSelector';
+import { useFilteredTransactions } from '@/hooks/useFilteredTransactions';
 
 type ViewMode = 'month' | 'year' | 'lifetime';
 
 export function BalanceHistoryScreen() {
-  const navigation = useNavigation();
   const palette = useThemeStore(state => state.palette);
   const { transactions } = useTransactionStore();
   const [viewMode, setViewMode] = useState<ViewMode>('month');
@@ -20,21 +22,12 @@ export function BalanceHistoryScreen() {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [showMonthPicker, setShowMonthPicker] = useState(false);
 
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter(tx => {
-      const date = new Date(tx.date);
-      if (viewMode === 'month') {
-        return (
-          date.getMonth() === selectedMonth &&
-          date.getFullYear() === selectedYear
-        );
-      }
-      if (viewMode === 'year') {
-        return date.getFullYear() === selectedYear;
-      }
-      return true; // lifetime
-    });
-  }, [transactions, viewMode, selectedMonth, selectedYear]);
+  const filteredTransactions = useFilteredTransactions(
+    transactions,
+    viewMode,
+    selectedMonth,
+    selectedYear,
+  );
 
   const balanceHistory = useMemo(() => {
     const sorted = [...filteredTransactions].sort(
@@ -70,151 +63,63 @@ export function BalanceHistoryScreen() {
     return history.reverse(); // Most recent first
   }, [filteredTransactions]);
 
-  const totalIncome = filteredTransactions
-    .filter(tx => tx.type === 'income')
-    .reduce((sum, tx) => sum + tx.amount, 0);
-  const totalExpense = filteredTransactions
-    .filter(tx => tx.type === 'expense')
-    .reduce((sum, tx) => sum + tx.amount, 0);
-  const netBalance = totalIncome - totalExpense;
+  const totalIncome = useMemo(
+    () =>
+      filteredTransactions
+        .filter(tx => tx.type === 'income')
+        .reduce((sum, tx) => sum + tx.amount, 0),
+    [filteredTransactions],
+  );
 
-  const monthNames = [
-    'Tháng 1',
-    'Tháng 2',
-    'Tháng 3',
-    'Tháng 4',
-    'Tháng 5',
-    'Tháng 6',
-    'Tháng 7',
-    'Tháng 8',
-    'Tháng 9',
-    'Tháng 10',
-    'Tháng 11',
-    'Tháng 12',
-  ];
-
-  const getPeriodLabel = () => {
-    if (viewMode === 'month') {
-      return `${monthNames[selectedMonth]} ${selectedYear}`;
-    }
-    if (viewMode === 'year') {
-      return `Năm ${selectedYear}`;
-    }
-    return 'Toàn bộ';
-  };
+  const totalExpense = useMemo(
+    () =>
+      filteredTransactions
+        .filter(tx => tx.type === 'expense')
+        .reduce((sum, tx) => sum + tx.amount, 0),
+    [filteredTransactions],
+  );
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return `${date.getDate().toString().padStart(2, '0')}/${(
+      date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, '0')}/${date.getFullYear()}`;
   };
+
+  const tabs = [
+    { key: 'month', label: 'Tháng' },
+    { key: 'year', label: 'Năm' },
+    { key: 'lifetime', label: 'Toàn bộ' },
+  ];
 
   return (
     <View style={[styles.screen, { backgroundColor: palette.background }]}>
-      <View style={styles.headerContainer}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={[styles.backButton, { backgroundColor: palette.card }]}
-        >
-          <Feather name="arrow-left" size={24} color={palette.text} />
-        </Pressable>
-        <Text style={[styles.headerTitle, { color: palette.text }]}>
-          Lịch sử số dư
-        </Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <ScreenHeader title="Lịch sử số dư" />
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.modeSelector}>
-          {(['month', 'year', 'lifetime'] as ViewMode[]).map(mode => (
-            <Pressable
-              key={mode}
-              style={[
-                styles.modeButton,
-                {
-                  backgroundColor:
-                    viewMode === mode ? palette.primary : 'transparent',
-                  borderColor: palette.border,
-                },
-              ]}
-              onPress={() => setViewMode(mode)}
-            >
-              <Text
-                style={[
-                  styles.modeButtonText,
-                  {
-                    color: viewMode === mode ? '#fff' : palette.text,
-                  },
-                ]}
-              >
-                {mode === 'month'
-                  ? 'Tháng'
-                  : mode === 'year'
-                  ? 'Năm'
-                  : 'Toàn bộ'}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+        <TabSelector
+          tabs={tabs}
+          activeTab={viewMode}
+          onTabChange={mode => setViewMode(mode as ViewMode)}
+        />
 
-        {(viewMode === 'month' || viewMode === 'year') && (
+        {viewMode === 'month' && (
           <Pressable
             style={[
               styles.periodSelector,
               { backgroundColor: palette.card, borderColor: palette.border },
             ]}
-            onPress={() => {
-              if (viewMode === 'month') {
-                setShowMonthPicker(true);
-              }
-            }}
+            onPress={() => setShowMonthPicker(true)}
           >
             <Text style={[styles.periodText, { color: palette.text }]}>
-              {getPeriodLabel()}
+              Tháng {selectedMonth + 1}/{selectedYear}
             </Text>
-            <Feather name="calendar" size={20} color={palette.primary} />
+            <Feather name="calendar" size={16} color={palette.primary} />
           </Pressable>
         )}
 
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: palette.card, borderColor: palette.border },
-          ]}
-        >
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted, fontSize: 13 }}>
-                Thu nhập
-              </Text>
-              <Text style={[styles.incomeText, { color: palette.success }]}>
-                {formatCurrency(totalIncome)}
-              </Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted, fontSize: 13 }}>
-                Chi tiêu
-              </Text>
-              <Text style={[styles.expenseText, { color: palette.danger }]}>
-                {formatCurrency(totalExpense)}
-              </Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted, fontSize: 13 }}>Số dư</Text>
-              <Text
-                style={[
-                  styles.balanceText,
-                  {
-                    color: netBalance >= 0 ? palette.success : palette.danger,
-                  },
-                ]}
-              >
-                {formatCurrency(netBalance)}
-              </Text>
-            </View>
-          </View>
-        </View>
+        <SummaryCard income={totalIncome} expense={totalExpense} />
 
         <View
           style={[
@@ -228,15 +133,16 @@ export function BalanceHistoryScreen() {
 
           {balanceHistory.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Feather name="inbox" size={48} color={palette.muted} />
+              <Feather name="inbox" size={40} color={palette.muted} />
               <Text
                 style={{
                   color: palette.muted,
                   textAlign: 'center',
-                  marginTop: 12,
+                  marginTop: 10,
+                  fontSize: 12,
                 }}
               >
-                Chưa có giao dịch nào
+                Chưa có giao dịch
               </Text>
             </View>
           ) : (
@@ -272,7 +178,7 @@ export function BalanceHistoryScreen() {
                                 ? 'arrow-down-left'
                                 : 'arrow-up-right'
                             }
-                            size={16}
+                            size={14}
                             color={
                               item.type === 'income'
                                 ? palette.success
@@ -359,8 +265,10 @@ export function BalanceHistoryScreen() {
         visible={showMonthPicker}
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
-        onMonthChange={setSelectedMonth}
-        onYearChange={setSelectedYear}
+        onSelect={(month, year) => {
+          setSelectedMonth(month);
+          setSelectedYear(year);
+        }}
         onClose={() => setShowMonthPicker(false)}
       />
     </View>
@@ -371,94 +279,36 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 12,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    flex: 1,
-    textAlign: 'center',
-  },
   container: {
-    padding: 16,
-    paddingBottom: 24,
-    gap: 12,
-  },
-  modeSelector: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  modeButton: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  modeButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
+    padding: 12,
+    paddingBottom: 20,
+    gap: 10,
   },
   periodSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 10,
     borderWidth: 1,
   },
   periodText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
   },
   card: {
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    gap: 12,
+    gap: 10,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    gap: 8,
-  },
-  summaryItem: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-  },
-  incomeText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  expenseText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  balanceText: {
     fontSize: 14,
     fontWeight: '700',
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 30,
   },
   historyList: {
     gap: 0,
@@ -466,23 +316,23 @@ const styles = StyleSheet.create({
   historyRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    gap: 10,
+    gap: 8,
   },
   historyLeft: {
     flex: 1,
-    gap: 6,
+    gap: 4,
   },
   historyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -491,35 +341,35 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   categoryText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
   historyDate: {
-    fontSize: 11,
+    fontSize: 10,
   },
   noteText: {
-    fontSize: 12,
-    marginLeft: 42,
+    fontSize: 11,
+    marginLeft: 36,
   },
   historyRight: {
     alignItems: 'flex-end',
-    gap: 4,
+    gap: 3,
     justifyContent: 'center',
   },
   historyAmount: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
   },
   balanceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   balanceLabel: {
-    fontSize: 12,
+    fontSize: 10,
   },
   historyBalance: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
   },
 });

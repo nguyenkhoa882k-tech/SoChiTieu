@@ -7,6 +7,11 @@ interface TabBarWithAdProps {
 }
 
 export function TabBarWithAd({ children }: TabBarWithAdProps) {
+  // Chỉ hiển thị ad container khi ở chế độ debug
+  if (!__DEV__) {
+    return <View style={styles.container}>{children}</View>;
+  }
+
   return (
     <View style={styles.container}>
       {children}

@@ -19,7 +19,7 @@ export function AppHeader({ subtitle }: AppHeaderProps) {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Feather name="pie-chart" size={24} color="#FFFFFF" />
+        <Feather name="pie-chart" size={20} color="#FFFFFF" />
       </LinearGradient>
       <View>
         <Text style={[styles.title, { color: palette.text }]}>Sổ Thu Chi</Text>
@@ -35,22 +35,22 @@ const styles = StyleSheet.create({
   wrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    gap: 10,
+    marginBottom: 12,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '700',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 2,
   },
 });

@@ -17,7 +17,7 @@ interface AdBannerProps {
 export function AdBanner({ placement = 'overview' }: AdBannerProps) {
   const palette = useThemeStore(state => state.palette);
 
-  // Only show ads in DEV mode
+  // Chỉ hiển thị quảng cáo khi ở chế độ debug/development
   if (!__DEV__) {
     return null;
   }
@@ -39,6 +39,9 @@ export function AdBanner({ placement = 'overview' }: AdBannerProps) {
       ]}
       accessibilityLabel={`Ad banner ${placement}`}
     >
+      <Text style={[styles.debugLabel, { color: palette.muted }]}>
+        [DEBUG MODE - Test Ad]
+      </Text>
       <BannerAd
         unitId={adUnitId!}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
@@ -60,5 +63,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
+  },
+  debugLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    marginBottom: 4,
+    opacity: 0.6,
   },
 });

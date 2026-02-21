@@ -53,16 +53,20 @@ export function AddEntryScreen() {
     android: ANDROID_INTERSTITIAL,
     default: TestIds.INTERSTITIAL,
   })!;
+
+  // Chỉ load ads khi ở chế độ debug
   const { isLoaded, isClosed, load, show } = useInterstitialAd(adUnitId, {
     requestNonPersonalizedAdsOnly: true,
   });
 
   React.useEffect(() => {
-    load();
+    if (__DEV__) {
+      load();
+    }
   }, [load]);
 
   React.useEffect(() => {
-    if (isClosed) {
+    if (__DEV__ && isClosed) {
       load();
     }
   }, [isClosed, load]);
@@ -196,9 +200,12 @@ export function AddEntryScreen() {
         type: 'success',
       });
       setModalVisible(true);
-      if (isLoaded) {
+
+      // Chỉ hiển thị interstitial ad khi ở chế độ debug
+      if (__DEV__ && isLoaded) {
         show();
       }
+
       setAmount(0);
       setNote('');
     } catch (error) {
@@ -237,7 +244,7 @@ export function AddEntryScreen() {
               >
                 <Feather
                   name={item.icon as any}
-                  size={18}
+                  size={16}
                   color={active ? '#fff' : palette.text}
                 />
                 <Text style={[styles.toggleLabel, labelColorStyle]}>
@@ -269,7 +276,7 @@ export function AddEntryScreen() {
               >
                 <Feather
                   name={item.icon as any}
-                  size={16}
+                  size={14}
                   color={active ? palette.primary : palette.text}
                 />
                 <Text
@@ -292,7 +299,7 @@ export function AddEntryScreen() {
             ]}
             onPress={() => setShowAddCategory(true)}
           >
-            <Feather name="plus" size={16} color={palette.primary} />
+            <Feather name="plus" size={14} color={palette.primary} />
             <Text
               style={[styles.categoryText, { color: palette.primary }]}
               numberOfLines={1}
@@ -332,7 +339,7 @@ export function AddEntryScreen() {
             colors={[palette.primary, palette.accent]}
             style={styles.dateIcon}
           >
-            <Feather name="calendar" size={18} color="#fff" />
+            <Feather name="calendar" size={16} color="#fff" />
           </LinearGradient>
           <Text style={[styles.dateText, dateTextColorStyle]}>
             {formatDateLabel(selectedDate.toISOString())}
@@ -408,52 +415,52 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 12,
-    gap: 6,
+    padding: 10,
+    gap: 5,
   },
   toggleRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
   },
   toggle: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
-    paddingVertical: 10,
-    borderRadius: 10,
+    gap: 4,
+    paddingVertical: 8,
+    borderRadius: 8,
     borderWidth: 1,
   },
   label: {
-    marginTop: 4,
-    marginBottom: 4,
+    marginTop: 3,
+    marginBottom: 3,
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 11,
   },
   categoryScrollContainer: {
-    maxHeight: 150,
+    maxHeight: 130,
   },
   categoryScroll: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 5,
   },
   categoryCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    borderRadius: 8,
     borderWidth: 1,
-    gap: 4,
+    gap: 3,
     width: '31.5%',
-    minHeight: 44,
+    minHeight: 40,
   },
   categoryText: {
     fontWeight: '600',
-    fontSize: 11,
+    fontSize: 10,
   },
   addCategoryCard: {
     borderStyle: 'dashed',
@@ -462,59 +469,61 @@ const styles = StyleSheet.create({
   walletRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 5,
   },
   walletChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 8,
   },
   datePicker: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: 8,
+    padding: 8,
   },
   dateIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
   noteInput: {
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
-    minHeight: 60,
-    padding: 10,
+    minHeight: 50,
+    padding: 8,
     textAlignVertical: 'top',
-    fontSize: 13,
+    fontSize: 12,
   },
   saveButton: {
-    marginTop: 8,
-    paddingVertical: 12,
-    borderRadius: 10,
+    marginTop: 6,
+    paddingVertical: 10,
+    borderRadius: 8,
     alignItems: 'center',
   },
   saveText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
   },
   toggleLabel: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 11,
   },
   toggleLabelActive: {
     color: '#fff',
   },
   walletText: {
     fontWeight: '600',
+    fontSize: 11,
   },
   dateText: {
     fontWeight: '600',
+    fontSize: 12,
   },
 });

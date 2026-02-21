@@ -435,7 +435,7 @@ export function MoreScreen() {
               ) : (
                 <Feather
                   name={item.icon as any}
-                  size={20}
+                  size={18}
                   color={palette.primary}
                 />
               )}
@@ -458,11 +458,12 @@ export function MoreScreen() {
         ]}
       >
         <Text style={[styles.cardTitle, { color: palette.text }]}>
-          Quảng cáo ưu đãi
+          Quảng cáo
         </Text>
-        <Text style={{ color: palette.muted }}>
-          Bật quảng cáo thử nghiệm để đảm bảo tích hợp hoàn chỉnh trước khi lên
-          store.
+        <Text style={{ color: palette.muted, fontSize: 12 }}>
+          {__DEV__
+            ? '✓ Đang bật (chế độ debug) - Quảng cáo test đang hiển thị'
+            : '✗ Đã tắt (production) - Quảng cáo chỉ hiện khi debug'}
         </Text>
       </View>
 
@@ -572,18 +573,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 16,
-    paddingBottom: 100,
-    gap: 12,
+    padding: 12,
+    paddingBottom: 80,
+    gap: 10,
   },
   card: {
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    gap: 12,
+    gap: 10,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
   },
   rowBetween: {
@@ -593,22 +594,22 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 13,
   },
   shortcutRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 12,
+    gap: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
   },
   flexFill: {
     flex: 1,
   },
   iconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

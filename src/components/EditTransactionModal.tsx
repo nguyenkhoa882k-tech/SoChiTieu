@@ -13,6 +13,7 @@ import { useTransactionStore } from '@/stores/transactionStore';
 import { Transaction } from '@/types/transaction';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { AmountInput } from './AmountInput';
+import { ConfirmModal } from './ConfirmModal';
 
 interface EditTransactionModalProps {
   visible: boolean;
@@ -30,15 +31,16 @@ export function EditTransactionModal({
   const palette = useThemeStore(state => state.palette);
   const { updateTransaction, deleteTransaction } = useTransactionStore();
 
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (transaction) {
-      setAmount(transaction.amount.toString());
+      setAmount(transaction.amount);
       setCategory(transaction.category);
       setNote(transaction.note || '');
       setDate(transaction.date);
@@ -47,12 +49,12 @@ export function EditTransactionModal({
   }, [transaction]);
 
   const handleSave = async () => {
-    if (!transaction || !amount || parseFloat(amount) <= 0 || !category) {
+    if (!transaction || !amount || amount <= 0 || !category) {
       return;
     }
 
     await updateTransaction(transaction.id, {
-      amount: parseFloat(amount),
+      amount,
       category,
       note: note.trim(),
       date,
@@ -63,10 +65,15 @@ export function EditTransactionModal({
     onClose();
   };
 
+  const handleDeleteConfirm = () => {
+    setShowDeleteConfirm(true);
+  };
+
   const handleDelete = async () => {
     if (!transaction) return;
 
     await deleteTransaction(transaction.id);
+    setShowDeleteConfirm(false);
     onSuccess();
     onClose();
   };
@@ -96,7 +103,7 @@ export function EditTransactionModal({
               Chỉnh sửa giao dịch
             </Text>
             <Pressable onPress={onClose} style={styles.closeButton}>
-              <Feather name="x" size={24} color={palette.text} />
+              <Feather name="x" size={20} color={palette.text} />
             </Pressable>
           </View>
 
@@ -177,7 +184,7 @@ export function EditTransactionModal({
                   >
                     <Feather
                       name={cat.icon as any}
-                      size={20}
+                      size={16}
                       color={category === cat.id ? cat.color : palette.muted}
                     />
                     <Text
@@ -212,7 +219,12 @@ export function EditTransactionModal({
                   // Simple text input simulation
                 }}
               >
-                <Text style={{ color: note ? palette.text : palette.muted }}>
+                <Text
+                  style={{
+                    color: note ? palette.text : palette.muted,
+                    fontSize: 12,
+                  }}
+                >
                   {note || 'Nhập ghi chú...'}
                 </Text>
               </Pressable>
@@ -227,9 +239,9 @@ export function EditTransactionModal({
                   borderColor: palette.danger,
                 },
               ]}
-              onPress={handleDelete}
+              onPress={handleDeleteConfirm}
             >
-              <Feather name="trash-2" size={18} color={palette.danger} />
+              <Feather name="trash-2" size={16} color={palette.danger} />
               <Text style={[styles.deleteText, { color: palette.danger }]}>
                 Xóa giao dịch
               </Text>
@@ -265,6 +277,18 @@ export function EditTransactionModal({
           </View>
         </Pressable>
       </Pressable>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        visible={showDeleteConfirm}
+        title="Xác nhận xóa"
+        message="Bạn có chắc chắn muốn xóa giao dịch này? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </Modal>
   );
 }
@@ -275,106 +299,107 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
   },
   content: {
     width: '100%',
     maxWidth: 500,
     maxHeight: '90%',
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 20,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
   },
   closeButton: {
     padding: 4,
   },
   body: {
-    padding: 20,
+    marginVertical: 5,
+    paddingHorizontal: 16,
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 8,
   },
   label: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   typeToggle: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
+    gap: 8,
+    marginBottom: 16,
   },
   typeButton: {
     flex: 1,
-    padding: 14,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 10,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
   typeText: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
   },
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
   },
   categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
     borderWidth: 1,
   },
   categoryLabel: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '500',
   },
   noteInput: {
-    padding: 14,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 10,
     borderWidth: 1,
   },
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    padding: 14,
-    borderRadius: 12,
+    gap: 6,
+    padding: 10,
+    borderRadius: 10,
     borderWidth: 1,
-    marginTop: 12,
+    marginTop: 2,
   },
   deleteText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',
-    gap: 12,
-    padding: 20,
+    gap: 8,
+    padding: 12,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
   },
   button: {
     flex: 1,
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   cancelButton: {
@@ -382,7 +407,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {},
   buttonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
 });
