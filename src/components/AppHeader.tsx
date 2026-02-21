@@ -14,7 +14,7 @@ export function AppHeader({ subtitle }: AppHeaderProps) {
   return (
     <View style={styles.wrapper}>
       <LinearGradient
-        colors={[palette.primary, palette.accent]}
+        colors={['#10B981', '#059669']}
         style={styles.avatar}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -22,8 +22,8 @@ export function AppHeader({ subtitle }: AppHeaderProps) {
         <Feather name="pie-chart" size={20} color="#FFFFFF" />
       </LinearGradient>
       <View>
-        <Text style={[styles.title, { color: palette.text }]}>Sổ Thu Chi</Text>
-        <Text style={[styles.subtitle, { color: palette.muted }]}>
+        <Text style={styles.title}>Sổ Thu Chi</Text>
+        <Text style={styles.subtitle}>
           {subtitle ?? 'Theo dõi chi tiêu thông minh'}
         </Text>
       </View>
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   avatar: {
     width: 40,
@@ -48,9 +48,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '700',
+    color: '#F1F5F9',
   },
   subtitle: {
     fontSize: 12,
     marginTop: 2,
+    color: '#94A3B8',
   },
 });

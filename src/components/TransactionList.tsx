@@ -36,10 +36,8 @@ export function TransactionList({
   if (!grouped.length) {
     return (
       <View style={styles.emptyState}>
-        <Feather name="inbox" size={24} color={palette.muted} />
-        <Text style={[styles.emptyText, { color: palette.muted }]}>
-          {emptyLabel ?? 'Chưa có dữ liệu'}
-        </Text>
+        <Feather name="inbox" size={24} color="#64748B" />
+        <Text style={styles.emptyText}>{emptyLabel ?? 'Chưa có dữ liệu'}</Text>
       </View>
     );
   }
@@ -48,9 +46,7 @@ export function TransactionList({
     <>
       {grouped.map(group => (
         <View key={group.date} style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: palette.muted }]}>
-            {formatDateLabel(group.date)}
-          </Text>
+          <Text style={styles.sectionTitle}>{formatDateLabel(group.date)}</Text>
           {group.items.map(tx => {
             const categoryMeta =
               CATEGORY_LIST.find(category => category.id === tx.category) ??
@@ -58,13 +54,7 @@ export function TransactionList({
             const isIncome = tx.type === 'income';
             return (
               <Pressable
-                style={[
-                  styles.row,
-                  {
-                    backgroundColor: palette.card,
-                    borderColor: palette.border,
-                  },
-                ]}
+                style={styles.row}
                 key={tx.id}
                 onPress={() => onEdit?.(tx)}
               >
@@ -72,32 +62,26 @@ export function TransactionList({
                   style={[
                     styles.icon,
                     {
-                      backgroundColor: `${
-                        categoryMeta?.color ?? palette.accent
-                      }33`,
+                      backgroundColor: `${categoryMeta?.color ?? '#818CF8'}33`,
                     },
                   ]}
                 >
                   <Feather
                     name={(categoryMeta?.icon ?? 'grid') as any}
-                    color={categoryMeta?.color ?? palette.accent}
-                    size={18}
+                    color={categoryMeta?.color ?? '#818CF8'}
+                    size={16}
                   />
                 </View>
                 <View style={styles.flexGrow}>
-                  <Text style={[styles.rowTitle, { color: palette.text }]}>
+                  <Text style={styles.rowTitle}>
                     {categoryMeta?.label ?? tx.category}
                   </Text>
-                  {tx.note ? (
-                    <Text style={[styles.note, { color: palette.muted }]}>
-                      {tx.note}
-                    </Text>
-                  ) : null}
+                  {tx.note ? <Text style={styles.note}>{tx.note}</Text> : null}
                 </View>
                 <Text
                   style={[
                     styles.amount,
-                    { color: isIncome ? palette.success : palette.danger },
+                    { color: isIncome ? '#10B981' : '#EC4899' },
                   ]}
                 >
                   {isIncome ? '+' : '-'} {formatCurrency(tx.amount)}
@@ -116,34 +100,40 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
     marginBottom: 8,
     textTransform: 'uppercase',
+    color: '#64748B',
+    letterSpacing: 0.5,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 18,
-    marginBottom: 10,
+    padding: 12,
+    borderRadius: 14,
+    marginBottom: 8,
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
     borderWidth: 1,
-    gap: 16,
+    borderColor: 'rgba(148, 163, 184, 0.1)',
+    gap: 12,
   },
   icon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   rowTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
+    color: '#F1F5F9',
   },
   note: {
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 2,
+    color: '#94A3B8',
   },
   emptyState: {
     alignItems: 'center',
@@ -151,12 +141,14 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     marginTop: 8,
-    fontSize: 14,
+    fontSize: 13,
+    color: '#64748B',
   },
   flexGrow: {
     flex: 1,
   },
   amount: {
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 14,
   },
 });

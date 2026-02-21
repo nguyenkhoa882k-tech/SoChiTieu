@@ -9,6 +9,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Feather from 'react-native-vector-icons/Feather';
+import LinearGradient from 'react-native-linear-gradient';
+import { BlurView } from '@react-native-community/blur';
 import { OverviewScreen } from '@/screens/OverviewScreen';
 import { AddEntryScreen } from '@/screens/AddEntryScreen';
 import { CalendarScreen } from '@/screens/CalendarScreen';
@@ -92,11 +94,11 @@ function AnimatedIcon({ routeName, color, size, focused }: AnimatedIconProps) {
   return (
     <View style={styles.iconWrapper}>
       <Animated.View style={[styles.iconBackground, backgroundAnimatedStyle]}>
-        <View
-          style={[
-            styles.iconBackgroundInner,
-            { backgroundColor: `${color}15` },
-          ]}
+        <LinearGradient
+          colors={['rgba(16, 185, 129, 0.2)', 'rgba(16, 185, 129, 0.1)']}
+          style={styles.iconBackgroundInner}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         />
       </Animated.View>
       <Animated.View style={iconAnimatedStyle}>
@@ -140,25 +142,33 @@ function TabNavigator() {
       screenOptions={({ route }: { route: { name: keyof TabParamList } }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: palette.primary,
-        tabBarInactiveTintColor: palette.muted,
+        tabBarActiveTintColor: '#10B981',
+        tabBarInactiveTintColor: '#64748B',
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '600',
-          marginTop: 2,
+          marginTop: 4,
         },
         tabBarStyle: {
-          backgroundColor: palette.card,
-          borderTopColor: 'transparent',
-          borderTopWidth: 0,
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'rgba(30, 41, 59, 0.85)',
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          borderTopColor: 'rgba(255, 255, 255, 0.1)',
+          borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 88 : 68,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 10,
-          paddingTop: 10,
-          elevation: 16,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+          paddingTop: 12,
+          paddingHorizontal: 8,
+          elevation: 0,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 10,
+          shadowOffset: { width: 0, height: -8 },
+          shadowOpacity: 0.4,
+          shadowRadius: 20,
+          overflow: 'hidden',
         },
         tabBarIcon: renderIcon(route),
       })}

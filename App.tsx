@@ -49,8 +49,9 @@ function RootNavigation() {
   return (
     <>
       <StatusBar
-        backgroundColor={palette.background}
-        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor="transparent"
+        barStyle="light-content"
+        translucent={true}
       />
       <NavigationContainer theme={navigationTheme}>
         <MainTabs />
