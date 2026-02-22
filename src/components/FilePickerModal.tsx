@@ -72,29 +72,32 @@ export function FilePickerModal({
           onPress={e => e.stopPropagation()}
           style={[
             styles.content,
-            { backgroundColor: palette.card, borderColor: palette.border },
+            {
+              backgroundColor: '#1a1f2e',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            },
           ]}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: palette.text }]}>
+            <Text style={[styles.title, { color: '#F1F5F9' }]}>
               Chọn file sao lưu
             </Text>
             <Pressable onPress={onCancel} style={styles.closeButton}>
-              <Feather name="x" size={24} color={palette.text} />
+              <Feather name="x" size={24} color="#F1F5F9" />
             </Pressable>
           </View>
 
           {loading ? (
             <View style={styles.emptyState}>
-              <Text style={{ color: palette.muted }}>Đang tải...</Text>
+              <Text style={{ color: '#94A3B8' }}>Đang tải...</Text>
             </View>
           ) : files.length === 0 ? (
             <View style={styles.emptyState}>
-              <Feather name="inbox" size={48} color={palette.muted} />
-              <Text style={[styles.emptyText, { color: palette.text }]}>
+              <Feather name="inbox" size={48} color="#64748B" />
+              <Text style={[styles.emptyText, { color: '#F1F5F9' }]}>
                 Không tìm thấy file sao lưu
               </Text>
-              <Text style={{ color: palette.muted, textAlign: 'center' }}>
+              <Text style={{ color: '#94A3B8', textAlign: 'center' }}>
                 Hãy xuất dữ liệu trước để tạo file sao lưu
               </Text>
             </View>
@@ -111,8 +114,8 @@ export function FilePickerModal({
                     style={[
                       styles.fileItem,
                       {
-                        backgroundColor: palette.background,
-                        borderColor: palette.border,
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
                       },
                     ]}
                     onPress={() => onSelect(filePath)}
@@ -120,24 +123,20 @@ export function FilePickerModal({
                     <View
                       style={[
                         styles.fileIcon,
-                        { backgroundColor: `${palette.primary}15` },
+                        { backgroundColor: `#10B98115` },
                       ]}
                     >
-                      <Feather name="file" size={24} color={palette.primary} />
+                      <Feather name="file" size={24} color="#10B981" />
                     </View>
                     <View style={styles.fileInfo}>
-                      <Text style={[styles.fileName, { color: palette.text }]}>
+                      <Text style={[styles.fileName, { color: '#F1F5F9' }]}>
                         Sao lưu
                       </Text>
-                      <Text style={{ color: palette.muted, fontSize: 13 }}>
+                      <Text style={{ color: '#94A3B8', fontSize: 13 }}>
                         {formatFileName(filePath)}
                       </Text>
                     </View>
-                    <Feather
-                      name="chevron-right"
-                      size={20}
-                      color={palette.muted}
-                    />
+                    <Feather name="chevron-right" size={20} color="#64748B" />
                   </Pressable>
                 ))}
               </ScrollView>
@@ -148,15 +147,13 @@ export function FilePickerModal({
             style={[
               styles.cancelButton,
               {
-                backgroundColor: palette.background,
-                borderColor: palette.border,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
               },
             ]}
             onPress={onCancel}
           >
-            <Text style={[styles.cancelText, { color: palette.text }]}>
-              Huỷ
-            </Text>
+            <Text style={[styles.cancelText, { color: '#94A3B8' }]}>Huỷ</Text>
           </Pressable>
         </Pressable>
       </Pressable>
@@ -169,7 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     padding: 20,
   },
   content: {

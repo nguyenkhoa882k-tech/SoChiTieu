@@ -95,15 +95,18 @@ export function EditTransactionModal({
           onPress={e => e.stopPropagation()}
           style={[
             styles.content,
-            { backgroundColor: palette.card, borderColor: palette.border },
+            {
+              backgroundColor: '#1a1f2e',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            },
           ]}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: palette.text }]}>
+            <Text style={[styles.title, { color: '#F1F5F9' }]}>
               Chỉnh sửa giao dịch
             </Text>
             <Pressable onPress={onClose} style={styles.closeButton}>
-              <Feather name="x" size={20} color={palette.text} />
+              <Feather name="x" size={20} color="#F1F5F9" />
             </Pressable>
           </View>
 
@@ -114,7 +117,7 @@ export function EditTransactionModal({
                 style={[
                   styles.typeButton,
                   type === 'expense' && {
-                    backgroundColor: palette.danger,
+                    backgroundColor: '#EC4899',
                   },
                 ]}
                 onPress={() => setType('expense')}
@@ -123,7 +126,7 @@ export function EditTransactionModal({
                   style={[
                     styles.typeText,
                     {
-                      color: type === 'expense' ? '#fff' : palette.text,
+                      color: type === 'expense' ? '#fff' : '#94A3B8',
                     },
                   ]}
                 >
@@ -134,7 +137,7 @@ export function EditTransactionModal({
                 style={[
                   styles.typeButton,
                   type === 'income' && {
-                    backgroundColor: palette.success,
+                    backgroundColor: '#10B981',
                   },
                 ]}
                 onPress={() => setType('income')}
@@ -143,7 +146,7 @@ export function EditTransactionModal({
                   style={[
                     styles.typeText,
                     {
-                      color: type === 'income' ? '#fff' : palette.text,
+                      color: type === 'income' ? '#fff' : '#94A3B8',
                     },
                   ]}
                 >
@@ -154,17 +157,13 @@ export function EditTransactionModal({
 
             {/* Amount */}
             <View style={styles.section}>
-              <Text style={[styles.label, { color: palette.text }]}>
-                Số tiền
-              </Text>
+              <Text style={[styles.label, { color: '#F1F5F9' }]}>Số tiền</Text>
               <AmountInput value={amount} onChangeValue={setAmount} />
             </View>
 
             {/* Category */}
             <View style={styles.section}>
-              <Text style={[styles.label, { color: palette.text }]}>
-                Danh mục
-              </Text>
+              <Text style={[styles.label, { color: '#F1F5F9' }]}>Danh mục</Text>
               <View style={styles.categoryGrid}>
                 {categories.map(cat => (
                   <Pressable
@@ -175,9 +174,11 @@ export function EditTransactionModal({
                         backgroundColor:
                           category === cat.id
                             ? `${cat.color}20`
-                            : palette.background,
+                            : 'rgba(255, 255, 255, 0.05)',
                         borderColor:
-                          category === cat.id ? cat.color : palette.border,
+                          category === cat.id
+                            ? cat.color
+                            : 'rgba(255, 255, 255, 0.1)',
                       },
                     ]}
                     onPress={() => setCategory(cat.id)}
@@ -185,13 +186,13 @@ export function EditTransactionModal({
                     <Feather
                       name={cat.icon as any}
                       size={16}
-                      color={category === cat.id ? cat.color : palette.muted}
+                      color={category === cat.id ? cat.color : '#64748B'}
                     />
                     <Text
                       style={[
                         styles.categoryLabel,
                         {
-                          color: category === cat.id ? cat.color : palette.text,
+                          color: category === cat.id ? cat.color : '#F1F5F9',
                         },
                       ]}
                     >
@@ -204,15 +205,15 @@ export function EditTransactionModal({
 
             {/* Note */}
             <View style={styles.section}>
-              <Text style={[styles.label, { color: palette.text }]}>
+              <Text style={[styles.label, { color: '#F1F5F9' }]}>
                 Ghi chú (tùy chọn)
               </Text>
               <Pressable
                 style={[
                   styles.noteInput,
                   {
-                    backgroundColor: palette.background,
-                    borderColor: palette.border,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
                   },
                 ]}
                 onPress={() => {
@@ -221,7 +222,7 @@ export function EditTransactionModal({
               >
                 <Text
                   style={{
-                    color: note ? palette.text : palette.muted,
+                    color: note ? '#F1F5F9' : '#64748B',
                     fontSize: 12,
                   }}
                 >
@@ -235,14 +236,14 @@ export function EditTransactionModal({
               style={[
                 styles.deleteButton,
                 {
-                  backgroundColor: `${palette.danger}15`,
-                  borderColor: palette.danger,
+                  backgroundColor: `#ef444415`,
+                  borderColor: '#ef4444',
                 },
               ]}
               onPress={handleDeleteConfirm}
             >
-              <Feather name="trash-2" size={16} color={palette.danger} />
-              <Text style={[styles.deleteText, { color: palette.danger }]}>
+              <Feather name="trash-2" size={16} color="#ef4444" />
+              <Text style={[styles.deleteText, { color: '#ef4444' }]}>
                 Xóa giao dịch
               </Text>
             </Pressable>
@@ -254,21 +255,19 @@ export function EditTransactionModal({
                 styles.button,
                 styles.cancelButton,
                 {
-                  backgroundColor: palette.background,
-                  borderColor: palette.border,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
                 },
               ]}
               onPress={onClose}
             >
-              <Text style={[styles.buttonText, { color: palette.text }]}>
-                Hủy
-              </Text>
+              <Text style={[styles.buttonText, { color: '#94A3B8' }]}>Hủy</Text>
             </Pressable>
             <Pressable
               style={[
                 styles.button,
                 styles.saveButton,
-                { backgroundColor: palette.primary },
+                { backgroundColor: '#10B981' },
               ]}
               onPress={handleSave}
             >
@@ -296,7 +295,7 @@ export function EditTransactionModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,

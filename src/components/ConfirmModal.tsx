@@ -44,13 +44,16 @@ export function ConfirmModal({
     <Modal visible={visible} transparent animationType="fade">
       <Animated.View
         entering={FadeIn.duration(150)}
-        style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
+        style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.7)' }]}
       >
         <Animated.View
           entering={SlideInDown.damping(20).stiffness(80)}
           style={[
             styles.content,
-            { backgroundColor: palette.card, borderColor: palette.border },
+            {
+              backgroundColor: '#1a1f2e',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            },
           ]}
         >
           <View
@@ -66,21 +69,22 @@ export function ConfirmModal({
             />
           </View>
 
-          <Text style={[styles.title, { color: palette.text }]}>{title}</Text>
-          <Text style={[styles.message, { color: palette.muted }]}>
-            {message}
-          </Text>
+          <Text style={[styles.title, { color: '#F1F5F9' }]}>{title}</Text>
+          <Text style={[styles.message, { color: '#94A3B8' }]}>{message}</Text>
 
           <View style={styles.buttonRow}>
             <Pressable
               style={[
                 styles.button,
                 styles.cancelButton,
-                { backgroundColor: palette.background, borderColor: palette.border },
+                {
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                },
               ]}
               onPress={onCancel}
             >
-              <Text style={[styles.buttonText, { color: palette.text }]}>
+              <Text style={[styles.buttonText, { color: '#94A3B8' }]}>
                 {cancelText}
               </Text>
             </Pressable>

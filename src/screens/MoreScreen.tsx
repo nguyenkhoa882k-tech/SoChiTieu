@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   View,
 } from 'react-native';
@@ -14,7 +13,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '@/navigation/MainTabs';
-import { useThemeStore } from '@/stores/themeStore';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { CustomModal } from '@/components/CustomModal';
@@ -29,7 +27,6 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 export function MoreScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { preference, setPreference } = useThemeStore();
   const { transactions, importTransactions, clearAllData } =
     useTransactionStore();
   const { customCategories, addCustomCategory } = useCategoryStore();
@@ -363,51 +360,6 @@ export function MoreScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <Text style={styles.cardTitle}>Giao diện</Text>
-            <View style={styles.rowBetween}>
-              <View>
-                <Text style={styles.title}>Chế độ tối</Text>
-                <Text style={styles.subtitle}>Tự động theo hệ thống</Text>
-              </View>
-              <Switch
-                trackColor={{
-                  true: '#10B981',
-                  false: 'rgba(255, 255, 255, 0.2)',
-                }}
-                thumbColor="#fff"
-                value={preference === 'dark'}
-                onValueChange={state => setPreference(state ? 'dark' : 'light')}
-              />
-            </View>
-            <View style={styles.rowBetween}>
-              <View>
-                <Text style={styles.title}>Đồng bộ hệ thống</Text>
-                <Text style={styles.subtitle}>
-                  Tự động áp dụng theme hệ thống
-                </Text>
-              </View>
-              <Switch
-                trackColor={{
-                  true: '#10B981',
-                  false: 'rgba(255, 255, 255, 0.2)',
-                }}
-                thumbColor="#fff"
-                value={preference === 'system'}
-                onValueChange={state =>
-                  setPreference(state ? 'system' : 'light')
-                }
-              />
-            </View>
-          </LinearGradient>
-        </View>
-
-        <View style={styles.card}>
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.03)']}
-            style={styles.cardGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
             <Text style={styles.cardTitle}>Báo cáo</Text>
             {reportShortcuts.map(item => (
               <Pressable
@@ -654,11 +606,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#F1F5F9',
     letterSpacing: -0.2,
-  },
-  rowBetween: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   title: {
     fontWeight: '700',

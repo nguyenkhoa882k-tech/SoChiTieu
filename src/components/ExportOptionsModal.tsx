@@ -27,32 +27,28 @@ export function ExportOptionsModal({
     <Modal visible={visible} transparent animationType="fade">
       <Animated.View
         entering={FadeIn.duration(150)}
-        style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
+        style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.7)' }]}
       >
         <Animated.View
           entering={SlideInDown.damping(20).stiffness(80)}
           style={[
             styles.content,
-            { backgroundColor: palette.card, borderColor: palette.border },
+            {
+              backgroundColor: '#1a1f2e',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            },
           ]}
         >
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: `${palette.success}15` },
-            ]}
-          >
-            <Feather name="check-circle" size={32} color={palette.success} />
+          <View style={[styles.iconCircle, { backgroundColor: `#10B98115` }]}>
+            <Feather name="check-circle" size={32} color="#10B981" />
           </View>
 
-          <Text style={[styles.title, { color: palette.text }]}>{title}</Text>
-          <Text style={[styles.message, { color: palette.muted }]}>
-            {message}
-          </Text>
+          <Text style={[styles.title, { color: '#F1F5F9' }]}>{title}</Text>
+          <Text style={[styles.message, { color: '#94A3B8' }]}>{message}</Text>
 
           <View style={styles.buttonColumn}>
             <Pressable
-              style={[styles.button, { backgroundColor: palette.primary }]}
+              style={[styles.button, { backgroundColor: '#10B981' }]}
               onPress={onShare}
             >
               <Feather name="share-2" size={18} color="#fff" />
@@ -62,7 +58,7 @@ export function ExportOptionsModal({
             </Pressable>
 
             <Pressable
-              style={[styles.button, { backgroundColor: palette.success }]}
+              style={[styles.button, { backgroundColor: '#10B981' }]}
               onPress={onDownload}
             >
               <Feather name="download" size={18} color="#fff" />
@@ -76,13 +72,13 @@ export function ExportOptionsModal({
                 styles.button,
                 styles.cancelButton,
                 {
-                  backgroundColor: palette.background,
-                  borderColor: palette.border,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
                 },
               ]}
               onPress={onCancel}
             >
-              <Text style={[styles.buttonText, { color: palette.text }]}>
+              <Text style={[styles.buttonText, { color: '#94A3B8' }]}>
                 Đóng
               </Text>
             </Pressable>

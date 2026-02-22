@@ -154,14 +154,14 @@ export function AddCategoryModal({
         <Animated.View
           entering={SlideInDown.springify().damping(20).stiffness(80)}
           exiting={SlideOutDown.duration(150)}
-          style={[styles.modalContainer, { backgroundColor: palette.card }]}
+          style={[styles.modalContainer, { backgroundColor: '#1a1f2e' }]}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: palette.text }]}>
+            <Text style={[styles.title, { color: '#F1F5F9' }]}>
               Thêm danh mục mới
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Feather name="x" size={24} color={palette.muted} />
+              <Feather name="x" size={24} color="#94A3B8" />
             </TouchableOpacity>
           </View>
 
@@ -170,26 +170,26 @@ export function AddCategoryModal({
             showsVerticalScrollIndicator={false}
           >
             {/* Tên danh mục */}
-            <Text style={[styles.label, { color: palette.muted }]}>
+            <Text style={[styles.label, { color: '#94A3B8' }]}>
               Tên danh mục *
             </Text>
             <TextInput
               style={[
                 styles.input,
                 {
-                  borderColor: palette.border,
-                  color: palette.text,
-                  backgroundColor: palette.background,
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  color: '#F1F5F9',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
                 },
               ]}
               placeholder="Ví dụ: Ăn sáng, Xăng xe..."
-              placeholderTextColor={palette.muted}
+              placeholderTextColor="#64748B"
               value={label}
               onChangeText={setLabel}
             />
 
             {/* Loại */}
-            <Text style={[styles.label, { color: palette.muted }]}>
+            <Text style={[styles.label, { color: '#94A3B8' }]}>
               Loại giao dịch
             </Text>
             <View style={styles.typeRow}>
@@ -197,26 +197,26 @@ export function AddCategoryModal({
                 style={[
                   styles.typeButton,
                   type === 'expense' && {
-                    backgroundColor: palette.primary,
-                    borderColor: palette.primary,
+                    backgroundColor: '#EC4899',
+                    borderColor: '#EC4899',
                   },
                   type !== 'expense' && {
-                    backgroundColor: palette.card,
-                    borderColor: palette.border,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
                   },
                 ]}
                 onPress={() => setType('expense')}
               >
                 <Feather
                   name="arrow-up-right"
-                  size={18}
-                  color={type === 'expense' ? '#fff' : palette.text}
+                  size={14}
+                  color={type === 'expense' ? '#fff' : '#94A3B8'}
                 />
                 <Text
                   style={[
                     styles.typeText,
                     type === 'expense' && styles.typeTextActive,
-                    type !== 'expense' && { color: palette.text },
+                    type !== 'expense' && { color: '#94A3B8' },
                   ]}
                 >
                   Khoản chi
@@ -226,26 +226,26 @@ export function AddCategoryModal({
                 style={[
                   styles.typeButton,
                   type === 'income' && {
-                    backgroundColor: palette.primary,
-                    borderColor: palette.primary,
+                    backgroundColor: '#10B981',
+                    borderColor: '#10B981',
                   },
                   type !== 'income' && {
-                    backgroundColor: palette.card,
-                    borderColor: palette.border,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
                   },
                 ]}
                 onPress={() => setType('income')}
               >
                 <Feather
                   name="arrow-down-left"
-                  size={18}
-                  color={type === 'income' ? '#fff' : palette.text}
+                  size={14}
+                  color={type === 'income' ? '#fff' : '#94A3B8'}
                 />
                 <Text
                   style={[
                     styles.typeText,
                     type === 'income' && styles.typeTextActive,
-                    type !== 'income' && { color: palette.text },
+                    type !== 'income' && { color: '#94A3B8' },
                   ]}
                 >
                   Khoản thu
@@ -254,7 +254,7 @@ export function AddCategoryModal({
             </View>
 
             {/* Icon */}
-            <Text style={[styles.label, { color: palette.muted }]}>
+            <Text style={[styles.label, { color: '#94A3B8' }]}>
               Chọn biểu tượng
             </Text>
             <View style={styles.iconGrid}>
@@ -268,8 +268,8 @@ export function AddCategoryModal({
                       borderColor: selectedColor,
                     },
                     selectedIcon !== icon && {
-                      backgroundColor: palette.background,
-                      borderColor: palette.border,
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      borderColor: 'rgba(255, 255, 255, 0.1)',
                     },
                   ]}
                   onPress={() => setSelectedIcon(icon)}
@@ -277,16 +277,14 @@ export function AddCategoryModal({
                   <Feather
                     name={icon as any}
                     size={20}
-                    color={
-                      selectedIcon === icon ? selectedColor : palette.muted
-                    }
+                    color={selectedIcon === icon ? selectedColor : '#64748B'}
                   />
                 </TouchableOpacity>
               ))}
             </View>
 
             {/* Màu sắc */}
-            <Text style={[styles.label, { color: palette.muted }]}>
+            <Text style={[styles.label, { color: '#94A3B8' }]}>
               Chọn màu sắc
             </Text>
             <View style={styles.colorGrid}>
@@ -308,7 +306,7 @@ export function AddCategoryModal({
             </View>
 
             {/* Mô tả */}
-            <Text style={[styles.label, { color: palette.muted }]}>
+            <Text style={[styles.label, { color: '#94A3B8' }]}>
               Mô tả (tùy chọn)
             </Text>
             <TextInput
@@ -316,22 +314,20 @@ export function AddCategoryModal({
                 styles.input,
                 styles.textArea,
                 {
-                  borderColor: palette.border,
-                  color: palette.text,
-                  backgroundColor: palette.background,
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  color: '#F1F5F9',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
                 },
               ]}
               placeholder="Thêm mô tả ngắn..."
-              placeholderTextColor={palette.muted}
+              placeholderTextColor="#64748B"
               value={description}
               onChangeText={setDescription}
               multiline
             />
 
             {/* Preview */}
-            <Text style={[styles.label, { color: palette.muted }]}>
-              Xem trước
-            </Text>
+            <Text style={[styles.label, { color: '#94A3B8' }]}>Xem trước</Text>
             <View
               style={[
                 styles.preview,
@@ -343,10 +339,10 @@ export function AddCategoryModal({
             >
               <Feather
                 name={selectedIcon as any}
-                size={24}
+                size={20}
                 color={selectedColor}
               />
-              <Text style={[styles.previewText, { color: palette.text }]}>
+              <Text style={[styles.previewText, { color: '#F1F5F9' }]}>
                 {label || 'Tên danh mục'}
               </Text>
             </View>
@@ -359,21 +355,19 @@ export function AddCategoryModal({
                 styles.button,
                 styles.cancelButton,
                 {
-                  backgroundColor: palette.background,
-                  borderColor: palette.border,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
                 },
               ]}
               onPress={onClose}
             >
-              <Text style={[styles.buttonText, { color: palette.muted }]}>
-                Hủy
-              </Text>
+              <Text style={[styles.buttonText, { color: '#94A3B8' }]}>Hủy</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.button,
                 styles.addButton,
-                { backgroundColor: palette.primary },
+                { backgroundColor: '#10B981' },
               ]}
               onPress={handleAdd}
               disabled={!label.trim()}
@@ -392,7 +386,7 @@ export function AddCategoryModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'flex-end',
   },
   overlayTouchable: {
@@ -412,52 +406,52 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingBottom: 12,
+    padding: 16,
+    paddingBottom: 10,
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
   },
   closeButton: {
     padding: 4,
   },
   content: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 12,
+    marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
+    borderRadius: 10,
+    padding: 10,
+    fontSize: 13,
   },
   textArea: {
-    minHeight: 80,
+    minHeight: 60,
     textAlignVertical: 'top',
   },
   typeRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 6,
   },
   typeButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 12,
+    gap: 6,
+    paddingVertical: 8,
+    borderRadius: 10,
     borderWidth: 1.5,
   },
   typeText: {
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: '600',
   },
   typeTextActive: {
@@ -466,12 +460,12 @@ const styles = StyleSheet.create({
   iconGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 6,
   },
   iconButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
@@ -479,12 +473,12 @@ const styles = StyleSheet.create({
   colorGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
   },
   colorButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -500,25 +494,25 @@ const styles = StyleSheet.create({
   preview: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    padding: 16,
-    borderRadius: 16,
+    gap: 10,
+    padding: 12,
+    borderRadius: 12,
     borderWidth: 2,
   },
   previewText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 12,
-    padding: 20,
-    paddingTop: 12,
+    gap: 8,
+    padding: 16,
+    paddingTop: 10,
   },
   button: {
     flex: 1,
-    height: 50,
-    borderRadius: 14,
+    height: 44,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -533,7 +527,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
   },
   addButtonText: {

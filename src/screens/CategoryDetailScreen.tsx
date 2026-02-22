@@ -1,11 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useTransactionStore } from '@/stores/transactionStore';
-import { useThemeStore } from '@/stores/themeStore';
-import { CATEGORY_LIST } from '@/constants/categories';
 import { formatCurrency } from '@/utils/format';
+import LinearGradient from 'react-native-linear-gradient';
 
 type RouteParams = {
   CategoryDetail: {
@@ -19,7 +25,6 @@ type RouteParams = {
 export function CategoryDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RouteParams, 'CategoryDetail'>>();
-  const palette = useThemeStore(state => state.palette);
   const { transactions } = useTransactionStore();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -71,85 +76,69 @@ export function CategoryDetailScreen() {
   ];
 
   return (
-    <View style={[styles.screen, { backgroundColor: palette.background }]}>
+    <LinearGradient
+      colors={['#1a1f2e', '#16213e', '#0f1419']}
+      style={styles.screen}
+    >
+      <View style={styles.statusBarSpacer} />
+      <View style={styles.glowLeft} />
+      <View style={styles.glowRight} />
+
       <View style={styles.headerContainer}>
         <Pressable
           onPress={() => navigation.goBack()}
-          style={[styles.backButton, { backgroundColor: palette.card }]}
+          style={styles.backButton}
         >
-          <Feather name="arrow-left" size={24} color={palette.text} />
+          <Feather name="arrow-left" size={20} color="#F1F5F9" />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: palette.text }]}>
-          {categoryLabel}
-        </Text>
-        <View style={{ width: 40 }} />
+        <Text style={styles.headerTitle}>{categoryLabel}</Text>
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
         {/* Year Selector */}
         <View style={styles.yearSelector}>
           <Pressable
-            style={[styles.yearButton, { borderColor: palette.border }]}
+            style={styles.yearButton}
             onPress={() => setSelectedYear(selectedYear - 1)}
           >
-            <Feather name="chevron-left" size={24} color={palette.primary} />
+            <Feather name="chevron-left" size={20} color="#10B981" />
           </Pressable>
-          <Text style={[styles.yearText, { color: palette.text }]}>
-            Năm {selectedYear}
-          </Text>
+          <Text style={styles.yearText}>Năm {selectedYear}</Text>
           <Pressable
-            style={[styles.yearButton, { borderColor: palette.border }]}
+            style={styles.yearButton}
             onPress={() => setSelectedYear(selectedYear + 1)}
           >
-            <Feather name="chevron-right" size={24} color={palette.primary} />
+            <Feather name="chevron-right" size={20} color="#10B981" />
           </Pressable>
         </View>
 
         {/* Summary Card */}
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: palette.card, borderColor: palette.border },
-          ]}
-        >
+        <View style={styles.card}>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted, fontSize: 13 }}>
+              <Text style={styles.summaryLabel}>
                 Tổng {type === 'expense' ? 'chi' : 'thu'}
               </Text>
               <Text
                 style={[
                   styles.totalText,
-                  {
-                    color:
-                      type === 'expense' ? palette.danger : palette.success,
-                  },
+                  { color: type === 'expense' ? '#EC4899' : '#10B981' },
                 ]}
               >
                 {formatCurrency(totalAmount)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={{ color: palette.muted, fontSize: 13 }}>
-                Số giao dịch
-              </Text>
-              <Text style={[styles.totalText, { color: palette.text }]}>
-                {totalCount}
-              </Text>
+              <Text style={styles.summaryLabel}>Số giao dịch</Text>
+              <Text style={styles.totalText}>{totalCount}</Text>
             </View>
           </View>
         </View>
 
         {/* Chart */}
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: palette.card, borderColor: palette.border },
-          ]}
-        >
-          <Text style={[styles.cardTitle, { color: palette.text }]}>
-            Biểu đồ theo tháng
-          </Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Biểu đồ theo tháng</Text>
 
           <ScrollView
             horizontal
@@ -167,29 +156,24 @@ export function CategoryDetailScreen() {
                       style={[
                         styles.bar,
                         {
-                          height: Math.max((data.amount / maxValue) * 150, 2),
+                          height: Math.max((data.amount / maxValue) * 100, 2),
                           backgroundColor: categoryColor,
                         },
                       ]}
                     />
                   </View>
-                  <Text style={[styles.monthLabel, { color: palette.text }]}>
+                  <Text style={styles.monthLabel}>
                     {monthNames[data.month]}
                   </Text>
                   <Text
                     style={[
                       styles.amountText,
-                      {
-                        color:
-                          type === 'expense' ? palette.danger : palette.success,
-                      },
+                      { color: type === 'expense' ? '#EC4899' : '#10B981' },
                     ]}
                   >
                     {formatCurrency(data.amount).replace(' ₫', '')}
                   </Text>
-                  <Text style={[styles.countText, { color: palette.muted }]}>
-                    {data.count} GD
-                  </Text>
+                  <Text style={styles.countText}>{data.count} GD</Text>
                 </View>
               );
             })}
@@ -197,43 +181,25 @@ export function CategoryDetailScreen() {
         </View>
 
         {/* Monthly Details */}
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: palette.card, borderColor: palette.border },
-          ]}
-        >
-          <Text style={[styles.cardTitle, { color: palette.text }]}>
-            Chi tiết theo tháng
-          </Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Chi tiết theo tháng</Text>
 
           <View style={styles.monthList}>
             {monthlyData.map((data, index) => {
               if (data.amount === 0) return null;
 
               return (
-                <View
-                  key={index}
-                  style={[
-                    styles.monthRow,
-                    { borderBottomColor: palette.border },
-                  ]}
-                >
+                <View key={index} style={styles.monthRow}>
                   <View style={styles.monthInfo}>
-                    <Text style={[styles.monthName, { color: palette.text }]}>
-                      Tháng {data.month + 1}
-                    </Text>
-                    <Text style={[styles.countLabel, { color: palette.muted }]}>
+                    <Text style={styles.monthName}>Tháng {data.month + 1}</Text>
+                    <Text style={styles.countLabel}>
                       {data.count} giao dịch
                     </Text>
                   </View>
                   <Text
                     style={[
                       styles.monthAmount,
-                      {
-                        color:
-                          type === 'expense' ? palette.danger : palette.success,
-                      },
+                      { color: type === 'expense' ? '#EC4899' : '#10B981' },
                     ]}
                   >
                     {formatCurrency(data.amount)}
@@ -244,7 +210,7 @@ export function CategoryDetailScreen() {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -252,104 +218,146 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  statusBarSpacer: {
+    height: Platform.OS === 'ios' ? 40 : 20,
+  },
+  glowLeft: {
+    position: 'absolute',
+    top: -100,
+    left: -100,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: '#10B981',
+    opacity: 0.15,
+    blur: 60,
+  },
+  glowRight: {
+    position: 'absolute',
+    top: 100,
+    right: -80,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: '#EC4899',
+    opacity: 0.12,
+    blur: 50,
+  },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     flex: 1,
     textAlign: 'center',
+    color: '#F1F5F9',
   },
   container: {
-    padding: 16,
-    paddingBottom: 24,
-    gap: 12,
+    padding: 14,
+    paddingBottom: 20,
+    gap: 10,
   },
   yearSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   yearButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: 1,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   yearText: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '700',
+    color: '#F1F5F9',
   },
   card: {
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    gap: 12,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    gap: 10,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
+    color: '#F1F5F9',
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    gap: 8,
+    gap: 6,
   },
   summaryItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
+  },
+  summaryLabel: {
+    fontSize: 11,
+    color: '#94A3B8',
   },
   totalText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
+    color: '#F1F5F9',
   },
   chartContainer: {
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    gap: 10,
   },
   barWrapper: {
     alignItems: 'center',
-    gap: 5,
-    minWidth: 55,
+    gap: 4,
+    minWidth: 50,
   },
   barContainer: {
-    height: 120,
+    height: 100,
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
   },
   bar: {
-    width: 24,
-    borderRadius: 6,
+    width: 20,
+    borderRadius: 5,
     minHeight: 2,
   },
   monthLabel: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
+    color: '#F1F5F9',
   },
   amountText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
   },
   countText: {
-    fontSize: 9,
+    fontSize: 8,
+    color: '#94A3B8',
   },
   monthList: {
     gap: 0,
@@ -358,21 +366,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   monthInfo: {
-    gap: 3,
+    gap: 2,
   },
   monthName: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
+    color: '#F1F5F9',
   },
   countLabel: {
-    fontSize: 12,
+    fontSize: 10,
+    color: '#94A3B8',
   },
   monthAmount: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
   },
 });

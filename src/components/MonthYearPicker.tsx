@@ -25,9 +25,18 @@ interface MonthYearPickerProps {
 }
 
 const MONTHS = [
-  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-  'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-  'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+  'Tháng 1',
+  'Tháng 2',
+  'Tháng 3',
+  'Tháng 4',
+  'Tháng 5',
+  'Tháng 6',
+  'Tháng 7',
+  'Tháng 8',
+  'Tháng 9',
+  'Tháng 10',
+  'Tháng 11',
+  'Tháng 12',
 ];
 
 export function MonthYearPicker({
@@ -71,33 +80,39 @@ export function MonthYearPicker({
         <Animated.View
           entering={SlideInDown.springify().damping(20).stiffness(80)}
           exiting={SlideOutDown.duration(150)}
-          style={[styles.modalContainer, { backgroundColor: palette.card }]}
+          style={[styles.modalContainer, { backgroundColor: '#1a1f2e' }]}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: palette.text }]}>
+            <Text style={[styles.title, { color: '#F1F5F9' }]}>
               Chọn tháng và năm
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Feather name="x" size={24} color={palette.muted} />
+              <Feather name="x" size={20} color="#94A3B8" />
             </TouchableOpacity>
           </View>
 
           <View style={styles.content}>
             {/* Year Selector */}
-            <Text style={[styles.label, { color: palette.muted }]}>Năm</Text>
+            <Text style={[styles.label, { color: '#94A3B8' }]}>Năm</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               style={styles.yearScroll}
               contentContainerStyle={styles.yearScrollContent}
             >
-              {years.map((year) => (
+              {years.map(year => (
                 <TouchableOpacity
                   key={year}
                   style={[
                     styles.yearChip,
-                    tempYear === year && { backgroundColor: palette.primary, borderColor: palette.primary },
-                    tempYear !== year && { backgroundColor: palette.background, borderColor: palette.border },
+                    tempYear === year && {
+                      backgroundColor: '#10B981',
+                      borderColor: '#10B981',
+                    },
+                    tempYear !== year && {
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      borderColor: 'rgba(255, 255, 255, 0.1)',
+                    },
                   ]}
                   onPress={() => setTempYear(year)}
                 >
@@ -105,7 +120,7 @@ export function MonthYearPicker({
                     style={[
                       styles.yearText,
                       tempYear === year && styles.yearTextActive,
-                      tempYear !== year && { color: palette.text },
+                      tempYear !== year && { color: '#94A3B8' },
                     ]}
                   >
                     {year}
@@ -115,15 +130,21 @@ export function MonthYearPicker({
             </ScrollView>
 
             {/* Month Selector */}
-            <Text style={[styles.label, { color: palette.muted }]}>Tháng</Text>
+            <Text style={[styles.label, { color: '#94A3B8' }]}>Tháng</Text>
             <View style={styles.monthGrid}>
               {MONTHS.map((month, index) => (
                 <TouchableOpacity
                   key={month}
                   style={[
                     styles.monthChip,
-                    tempMonth === index && { backgroundColor: palette.primary, borderColor: palette.primary },
-                    tempMonth !== index && { backgroundColor: palette.background, borderColor: palette.border },
+                    tempMonth === index && {
+                      backgroundColor: '#10B981',
+                      borderColor: '#10B981',
+                    },
+                    tempMonth !== index && {
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      borderColor: 'rgba(255, 255, 255, 0.1)',
+                    },
                   ]}
                   onPress={() => setTempMonth(index)}
                 >
@@ -131,7 +152,7 @@ export function MonthYearPicker({
                     style={[
                       styles.monthText,
                       tempMonth === index && styles.monthTextActive,
-                      tempMonth !== index && { color: palette.text },
+                      tempMonth !== index && { color: '#94A3B8' },
                     ]}
                   >
                     {month}
@@ -144,16 +165,29 @@ export function MonthYearPicker({
           {/* Buttons */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={[styles.button, styles.cancelButton, { backgroundColor: palette.background, borderColor: palette.border }]}
+              style={[
+                styles.button,
+                styles.cancelButton,
+                {
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                },
+              ]}
               onPress={onClose}
             >
-              <Text style={[styles.buttonText, { color: palette.muted }]}>Hủy</Text>
+              <Text style={[styles.buttonText, { color: '#94A3B8' }]}>Hủy</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, styles.confirmButton, { backgroundColor: palette.primary }]}
+              style={[
+                styles.button,
+                styles.confirmButton,
+                { backgroundColor: '#10B981' },
+              ]}
               onPress={handleConfirm}
             >
-              <Text style={[styles.buttonText, styles.confirmButtonText]}>Xác nhận</Text>
+              <Text style={[styles.buttonText, styles.confirmButtonText]}>
+                Xác nhận
+              </Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -165,7 +199,7 @@ export function MonthYearPicker({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'flex-end',
   },
   overlayTouchable: {
@@ -184,40 +218,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingBottom: 12,
+    padding: 16,
+    paddingBottom: 10,
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
   },
   closeButton: {
     padding: 4,
   },
   content: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 12,
+    marginTop: 10,
+    marginBottom: 8,
+    textTransform: 'uppercase',
   },
   yearScroll: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   yearScrollContent: {
-    gap: 10,
+    gap: 6,
   },
   yearChip: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1.5,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   yearText: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
   },
   yearTextActive: {
@@ -226,17 +261,17 @@ const styles = StyleSheet.create({
   monthGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 6,
   },
   monthChip: {
-    width: '30%',
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1.5,
+    width: '23%',
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
     alignItems: 'center',
   },
   monthText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   monthTextActive: {
@@ -244,19 +279,19 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 12,
-    padding: 20,
-    paddingTop: 12,
+    gap: 8,
+    padding: 16,
+    paddingTop: 10,
   },
   button: {
     flex: 1,
-    height: 50,
-    borderRadius: 14,
+    height: 44,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelButton: {
-    borderWidth: 1.5,
+    borderWidth: 1,
   },
   confirmButton: {
     shadowColor: '#000',
@@ -266,7 +301,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
   },
   confirmButtonText: {

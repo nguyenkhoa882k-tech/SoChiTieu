@@ -89,41 +89,46 @@ export function ReminderSettingsModal({
           onPress={e => e.stopPropagation()}
           style={[
             styles.content,
-            { backgroundColor: palette.card, borderColor: palette.border },
+            {
+              backgroundColor: '#1a1f2e',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            },
           ]}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: palette.text }]}>
+            <Text style={[styles.title, { color: '#F1F5F9' }]}>
               Nhắc lịch chi tiêu
             </Text>
             <Pressable onPress={onClose} style={styles.closeButton}>
-              <Feather name="x" size={24} color={palette.text} />
+              <Feather name="x" size={24} color="#F1F5F9" />
             </Pressable>
           </View>
 
           <ScrollView style={styles.body}>
             {/* Enable/Disable */}
-            <View style={[styles.row, { borderColor: palette.border }]}>
+            <View
+              style={[styles.row, { borderColor: 'rgba(255, 255, 255, 0.1)' }]}
+            >
               <View style={styles.rowLeft}>
                 <View
-                  style={[
-                    styles.iconBox,
-                    { backgroundColor: `${palette.primary}15` },
-                  ]}
+                  style={[styles.iconBox, { backgroundColor: `#10B98115` }]}
                 >
-                  <Feather name="bell" size={20} color={palette.primary} />
+                  <Feather name="bell" size={20} color="#10B981" />
                 </View>
                 <View>
-                  <Text style={[styles.rowTitle, { color: palette.text }]}>
+                  <Text style={[styles.rowTitle, { color: '#F1F5F9' }]}>
                     Bật nhắc nhở
                   </Text>
-                  <Text style={[styles.rowSubtitle, { color: palette.muted }]}>
+                  <Text style={[styles.rowSubtitle, { color: '#94A3B8' }]}>
                     Nhận thông báo hàng ngày
                   </Text>
                 </View>
               </View>
               <Switch
-                trackColor={{ true: palette.primary, false: palette.border }}
+                trackColor={{
+                  true: '#10B981',
+                  false: 'rgba(255, 255, 255, 0.1)',
+                }}
                 thumbColor="#fff"
                 value={enabled}
                 onValueChange={handleToggle}
@@ -132,29 +137,26 @@ export function ReminderSettingsModal({
 
             {/* Time Picker */}
             <Pressable
-              style={[styles.row, { borderColor: palette.border }]}
+              style={[styles.row, { borderColor: 'rgba(255, 255, 255, 0.1)' }]}
               onPress={() => enabled && setShowTimePicker(true)}
               disabled={!enabled}
             >
               <View style={styles.rowLeft}>
                 <View
-                  style={[
-                    styles.iconBox,
-                    { backgroundColor: `${palette.primary}15` },
-                  ]}
+                  style={[styles.iconBox, { backgroundColor: `#10B98115` }]}
                 >
-                  <Feather name="clock" size={20} color={palette.primary} />
+                  <Feather name="clock" size={20} color="#10B981" />
                 </View>
                 <View>
                   <Text
                     style={[
                       styles.rowTitle,
-                      { color: enabled ? palette.text : palette.muted },
+                      { color: enabled ? '#F1F5F9' : '#64748B' },
                     ]}
                   >
                     Giờ nhắc nhở
                   </Text>
-                  <Text style={[styles.rowSubtitle, { color: palette.muted }]}>
+                  <Text style={[styles.rowSubtitle, { color: '#94A3B8' }]}>
                     Chọn thời gian nhận thông báo
                   </Text>
                 </View>
@@ -162,7 +164,7 @@ export function ReminderSettingsModal({
               <Text
                 style={[
                   styles.timeText,
-                  { color: enabled ? palette.primary : palette.muted },
+                  { color: enabled ? '#10B981' : '#64748B' },
                 ]}
               >
                 {formatTime(hour, minute)}
@@ -174,31 +176,29 @@ export function ReminderSettingsModal({
               <Pressable
                 style={[
                   styles.row,
-                  { borderColor: palette.border, borderBottomWidth: 0 },
+                  {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderBottomWidth: 0,
+                  },
                 ]}
                 onPress={handleTestNotification}
               >
                 <View style={styles.rowLeft}>
                   <View
-                    style={[
-                      styles.iconBox,
-                      { backgroundColor: `${palette.success}15` },
-                    ]}
+                    style={[styles.iconBox, { backgroundColor: `#10B98115` }]}
                   >
-                    <Feather name="send" size={20} color={palette.success} />
+                    <Feather name="send" size={20} color="#10B981" />
                   </View>
                   <View>
-                    <Text style={[styles.rowTitle, { color: palette.text }]}>
+                    <Text style={[styles.rowTitle, { color: '#F1F5F9' }]}>
                       Gửi thông báo thử
                     </Text>
-                    <Text
-                      style={[styles.rowSubtitle, { color: palette.muted }]}
-                    >
+                    <Text style={[styles.rowSubtitle, { color: '#94A3B8' }]}>
                       Kiểm tra thông báo hoạt động
                     </Text>
                   </View>
                 </View>
-                <Feather name="chevron-right" size={20} color={palette.muted} />
+                <Feather name="chevron-right" size={20} color="#64748B" />
               </Pressable>
             )}
 
@@ -207,13 +207,13 @@ export function ReminderSettingsModal({
               style={[
                 styles.infoBox,
                 {
-                  backgroundColor: `${palette.primary}10`,
-                  borderColor: palette.primary,
+                  backgroundColor: `#10B98110`,
+                  borderColor: '#10B981',
                 },
               ]}
             >
-              <Feather name="info" size={16} color={palette.primary} />
-              <Text style={[styles.infoText, { color: palette.text }]}>
+              <Feather name="info" size={16} color="#10B981" />
+              <Text style={[styles.infoText, { color: '#F1F5F9' }]}>
                 Thông báo sẽ được gửi mỗi ngày vào thời gian đã chọn để nhắc bạn
                 ghi lại chi tiêu hàng ngày.
               </Text>
@@ -234,15 +234,13 @@ export function ReminderSettingsModal({
             style={[
               styles.closeButtonBottom,
               {
-                backgroundColor: palette.background,
-                borderColor: palette.border,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
               },
             ]}
             onPress={onClose}
           >
-            <Text style={[styles.closeText, { color: palette.text }]}>
-              Đóng
-            </Text>
+            <Text style={[styles.closeText, { color: '#94A3B8' }]}>Đóng</Text>
           </Pressable>
         </Pressable>
       </Pressable>
@@ -253,7 +251,7 @@ export function ReminderSettingsModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,

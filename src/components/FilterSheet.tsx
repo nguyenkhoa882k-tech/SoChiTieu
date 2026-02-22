@@ -21,7 +21,12 @@ interface FilterSheetProps {
   onApply: (filter: TransactionFilter) => void;
 }
 
-export function FilterSheet({ visible, value, onClose, onApply }: FilterSheetProps) {
+export function FilterSheet({
+  visible,
+  value,
+  onClose,
+  onApply,
+}: FilterSheetProps) {
   const [localFilter, setLocalFilter] = useState<TransactionFilter>(value);
   const palette = useThemeStore(state => state.palette);
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -42,7 +47,13 @@ export function FilterSheet({ visible, value, onClose, onApply }: FilterSheetPro
     const marks: Record<string, any> = {};
     const { startDate, endDate } = localFilter;
     if (startDate && !endDate) {
-      marks[startDate] = { selected: true, startingDay: true, endingDay: true, color: palette.primary, textColor: '#fff' };
+      marks[startDate] = {
+        selected: true,
+        startingDay: true,
+        endingDay: true,
+        color: palette.primary,
+        textColor: '#fff',
+      };
     }
     if (startDate && endDate) {
       const start = new Date(startDate);
@@ -107,7 +118,7 @@ export function FilterSheet({ visible, value, onClose, onApply }: FilterSheetPro
           style={[
             styles.sheet,
             {
-              backgroundColor: palette.card,
+              backgroundColor: '#1a1f2e',
               transform: [
                 {
                   translateY: slideAnim.interpolate({
@@ -119,98 +130,127 @@ export function FilterSheet({ visible, value, onClose, onApply }: FilterSheetPro
             },
           ]}
         >
-            <View style={styles.headerRow}>
-              <Text style={[styles.title, { color: palette.text }]}>Bộ lọc</Text>
-              <Pressable onPress={resetFilter}>
-                <Text style={[styles.resetText, { color: palette.primary }]}>Đặt lại</Text>
-              </Pressable>
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={[styles.sectionLabel, { color: palette.muted }]}>Loại giao dịch</Text>
-              <View style={styles.typeRow}>
-                {[
-                  { key: 'all', label: 'Tất cả', icon: 'layers' },
-                  { key: 'income', label: 'Thu', icon: 'trending-up' },
-                  { key: 'expense', label: 'Chi', icon: 'trending-down' },
-                ].map(item => {
-                  const active = localFilter.type === item.key;
-                  return (
-                    <Pressable
-                      key={item.key}
-                      style={[
-                        styles.typeChip,
-                        {
-                          backgroundColor: active ? palette.primary : 'transparent',
-                          borderColor: palette.border,
-                        },
-                      ]}
-                      onPress={() => setLocalFilter(prev => ({ ...prev, type: item.key as TransactionFilter['type'] }))}
-                    >
-                      <Feather
-                        name={item.icon as any}
-                        color={active ? '#fff' : palette.text}
-                        size={16}
-                      />
-                      <Text
-                        style={{
-                          color: active ? '#fff' : palette.text,
-                          marginLeft: 6,
-                          fontWeight: '600',
-                        }}
-                      >
-                        {item.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              <Text style={[styles.sectionLabel, { color: palette.muted }]}>Danh mục</Text>
-              <View style={styles.categoryGrid}>
-                {CATEGORY_LIST.map(category => {
-                  const selected = localFilter.categories.includes(category.id);
-                  return (
-                    <Pressable
-                      key={category.id}
-                      onPress={() => toggleCategory(category.id)}
-                      style={[
-                        styles.categoryChip,
-                        {
-                          borderColor: selected ? palette.primary : palette.border,
-                          backgroundColor: selected ? `${palette.primary}22` : 'transparent',
-                        },
-                      ]}
-                    >
-                      <Feather
-                        name={category.icon as any}
-                        color={selected ? palette.primary : palette.muted}
-                        size={18}
-                      />
-                      <Text style={{ color: palette.text, marginLeft: 8 }}>{category.label}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              <Text style={[styles.sectionLabel, { color: palette.muted }]}>Khoảng thời gian</Text>
-              <Calendar
-                markingType="period"
-                markedDates={markedDates}
-                onDayPress={day => handleSelectDay(day.dateString)}
-                theme={{
-                  calendarBackground: palette.card,
-                  dayTextColor: palette.text,
-                  monthTextColor: palette.text,
-                  todayTextColor: palette.secondary,
-                }}
-              />
-            </ScrollView>
-            <Pressable
-              style={[styles.applyButton, { backgroundColor: palette.primary }]}
-              onPress={applyFilter}
-            >
-              <Text style={styles.applyText}>Áp dụng</Text>
+          <View style={styles.headerRow}>
+            <Text style={[styles.title, { color: '#F1F5F9' }]}>Bộ lọc</Text>
+            <Pressable onPress={resetFilter}>
+              <Text style={[styles.resetText, { color: '#10B981' }]}>
+                Đặt lại
+              </Text>
             </Pressable>
+          </View>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={[styles.sectionLabel, { color: '#94A3B8' }]}>
+              Loại
+            </Text>
+            <View style={styles.typeRow}>
+              {[
+                { key: 'all', label: 'Tất cả', icon: 'layers' },
+                { key: 'income', label: 'Thu', icon: 'trending-up' },
+                { key: 'expense', label: 'Chi', icon: 'trending-down' },
+              ].map(item => {
+                const active = localFilter.type === item.key;
+                return (
+                  <Pressable
+                    key={item.key}
+                    style={[
+                      styles.typeChip,
+                      {
+                        backgroundColor: active ? '#10B981' : 'transparent',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                    ]}
+                    onPress={() =>
+                      setLocalFilter(prev => ({
+                        ...prev,
+                        type: item.key as TransactionFilter['type'],
+                      }))
+                    }
+                  >
+                    <Feather
+                      name={item.icon as any}
+                      color={active ? '#fff' : '#94A3B8'}
+                      size={14}
+                    />
+                    <Text
+                      style={{
+                        color: active ? '#fff' : '#94A3B8',
+                        marginLeft: 4,
+                        fontWeight: '600',
+                        fontSize: 12,
+                      }}
+                    >
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <Text style={[styles.sectionLabel, { color: '#94A3B8' }]}>
+              Danh mục
+            </Text>
+            <View style={styles.categoryGrid}>
+              {CATEGORY_LIST.map(category => {
+                const selected = localFilter.categories.includes(category.id);
+                return (
+                  <Pressable
+                    key={category.id}
+                    onPress={() => toggleCategory(category.id)}
+                    style={[
+                      styles.categoryChip,
+                      {
+                        borderColor: selected
+                          ? '#10B981'
+                          : 'rgba(255, 255, 255, 0.1)',
+                        backgroundColor: selected ? `#10B98122` : 'transparent',
+                      },
+                    ]}
+                  >
+                    <Feather
+                      name={category.icon as any}
+                      color={selected ? '#10B981' : '#64748B'}
+                      size={14}
+                    />
+                    <Text
+                      style={{
+                        color: selected ? '#10B981' : '#94A3B8',
+                        marginLeft: 6,
+                        fontSize: 11,
+                        fontWeight: '600',
+                      }}
+                    >
+                      {category.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <Text style={[styles.sectionLabel, { color: '#94A3B8' }]}>
+              Thời gian
+            </Text>
+            <Calendar
+              markingType="period"
+              markedDates={markedDates}
+              onDayPress={day => handleSelectDay(day.dateString)}
+              theme={{
+                calendarBackground: '#1a1f2e',
+                dayTextColor: '#F1F5F9',
+                monthTextColor: '#F1F5F9',
+                todayTextColor: '#10B981',
+                textDayFontSize: 13,
+                textMonthFontSize: 14,
+                textDayHeaderFontSize: 11,
+              }}
+              style={{ borderRadius: 12 }}
+            />
+          </ScrollView>
+          <Pressable
+            style={[styles.applyButton, { backgroundColor: '#10B981' }]}
+            onPress={applyFilter}
+          >
+            <Text style={styles.applyText}>Áp dụng</Text>
+          </Pressable>
         </Animated.View>
       </View>
     </Modal>
@@ -220,71 +260,72 @@ export function FilterSheet({ visible, value, onClose, onApply }: FilterSheetPro
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: '#00000080',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'flex-end',
   },
   sheet: {
     maxHeight: '90%',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 24,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 20,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   resetText: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '600',
   },
   sectionLabel: {
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: 10,
+    marginBottom: 6,
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: 11,
     textTransform: 'uppercase',
   },
   typeRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
   },
   typeChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
     borderWidth: 1,
   },
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
   },
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 14,
     borderWidth: 1,
   },
   applyButton: {
-    marginTop: 16,
-    paddingVertical: 16,
-    borderRadius: 16,
+    marginTop: 12,
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: 'center',
   },
   applyText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 15,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Dimensions,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,19 +10,16 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '@/stores/transactionStore';
-import { useThemeStore } from '@/stores/themeStore';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { formatCurrency } from '@/utils/format';
 import { MonthYearPicker } from '@/components/MonthYearPicker';
-
-const screenWidth = Dimensions.get('window').width;
+import LinearGradient from 'react-native-linear-gradient';
 
 type ViewMode = 'month' | 'year' | 'lifetime';
 type TabType = 'expense' | 'income';
 
 export function CategoryReportScreen() {
   const navigation = useNavigation();
-  const palette = useThemeStore(state => state.palette);
   const { transactions } = useTransactionStore();
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [activeTab, setActiveTab] = useState<TabType>('expense');
@@ -114,18 +111,23 @@ export function CategoryReportScreen() {
   };
 
   return (
-    <View style={[styles.screen, { backgroundColor: palette.background }]}>
+    <LinearGradient
+      colors={['#1a1f2e', '#16213e', '#0f1419']}
+      style={styles.screen}
+    >
+      <View style={styles.statusBarSpacer} />
+      <View style={styles.glowLeft} />
+      <View style={styles.glowRight} />
+
       <View style={styles.headerContainer}>
         <Pressable
           onPress={() => navigation.goBack()}
-          style={[styles.backButton, { backgroundColor: palette.card }]}
+          style={styles.backButton}
         >
-          <Feather name="arrow-left" size={24} color={palette.text} />
+          <Feather name="arrow-left" size={20} color="#F1F5F9" />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: palette.text }]}>
-          Báo cáo danh mục
-        </Text>
-        <View style={{ width: 40 }} />
+        <Text style={styles.headerTitle}>Báo cáo danh mục</Text>
+        <View style={{ width: 36 }} />
       </View>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.modeSelector}>
@@ -134,20 +136,14 @@ export function CategoryReportScreen() {
               key={mode}
               style={[
                 styles.modeButton,
-                {
-                  backgroundColor:
-                    viewMode === mode ? palette.primary : 'transparent',
-                  borderColor: palette.border,
-                },
+                viewMode === mode && styles.modeButtonActive,
               ]}
               onPress={() => setViewMode(mode)}
             >
               <Text
                 style={[
                   styles.modeButtonText,
-                  {
-                    color: viewMode === mode ? '#fff' : palette.text,
-                  },
+                  viewMode === mode && styles.modeButtonTextActive,
                 ]}
               >
                 {mode === 'month'
@@ -162,61 +158,47 @@ export function CategoryReportScreen() {
 
         {(viewMode === 'month' || viewMode === 'year') && (
           <Pressable
-            style={[
-              styles.periodSelector,
-              { backgroundColor: palette.card, borderColor: palette.border },
-            ]}
+            style={styles.periodSelector}
             onPress={() => {
               if (viewMode === 'month') {
                 setShowMonthPicker(true);
               }
             }}
           >
-            <Text style={[styles.periodText, { color: palette.text }]}>
-              {getPeriodLabel()}
-            </Text>
-            <Feather name="calendar" size={20} color={palette.primary} />
+            <Text style={styles.periodText}>{getPeriodLabel()}</Text>
+            <Feather name="calendar" size={18} color="#10B981" />
           </Pressable>
         )}
 
         {/* Tabs */}
         <View style={styles.tabsContainer}>
           <Pressable
-            style={[
-              styles.tab,
-              activeTab === 'expense' && {
-                backgroundColor: palette.danger,
-              },
-              { borderColor: palette.border },
-            ]}
+            style={[styles.tab, activeTab === 'expense' && styles.tabActive]}
             onPress={() => setActiveTab('expense')}
           >
             <Text
               style={[
                 styles.tabText,
-                { color: activeTab === 'expense' ? '#fff' : palette.text },
+                activeTab === 'expense' && styles.tabTextActive,
               ]}
             >
-              Chi tiêu
+              Chi
             </Text>
           </Pressable>
           <Pressable
             style={[
               styles.tab,
-              activeTab === 'income' && {
-                backgroundColor: palette.success,
-              },
-              { borderColor: palette.border },
+              activeTab === 'income' && styles.tabActiveIncome,
             ]}
             onPress={() => setActiveTab('income')}
           >
             <Text
               style={[
                 styles.tabText,
-                { color: activeTab === 'income' ? '#fff' : palette.text },
+                activeTab === 'income' && styles.tabTextActive,
               ]}
             >
-              Thu nhập
+              Thu
             </Text>
           </Pressable>
         </View>
@@ -224,15 +206,8 @@ export function CategoryReportScreen() {
         {/* Chart */}
         {((activeTab === 'expense' && expenseByCategory.length > 0) ||
           (activeTab === 'income' && incomeByCategory.length > 0)) && (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: palette.card, borderColor: palette.border },
-            ]}
-          >
-            <Text style={[styles.cardTitle, { color: palette.text }]}>
-              Biểu đồ theo danh mục
-            </Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Biểu đồ theo danh mục</Text>
 
             <ScrollView
               horizontal
@@ -249,16 +224,13 @@ export function CategoryReportScreen() {
                       style={[
                         styles.bar,
                         {
-                          height: Math.max((cat.value / maxValue) * 150, 2),
+                          height: Math.max((cat.value / maxValue) * 100, 2),
                           backgroundColor: cat.color,
                         },
                       ]}
                     />
                   </View>
-                  <Text
-                    style={[styles.categoryLabelShort, { color: palette.text }]}
-                    numberOfLines={1}
-                  >
+                  <Text style={styles.categoryLabelShort} numberOfLines={1}>
                     {cat.label.length > 6
                       ? cat.label.substring(0, 5) + '..'
                       : cat.label}
@@ -267,10 +239,7 @@ export function CategoryReportScreen() {
                     style={[
                       styles.amountText,
                       {
-                        color:
-                          activeTab === 'expense'
-                            ? palette.danger
-                            : palette.success,
+                        color: activeTab === 'expense' ? '#EC4899' : '#10B981',
                       },
                     ]}
                   >
@@ -285,25 +254,13 @@ export function CategoryReportScreen() {
         {/* Category List */}
         {((activeTab === 'expense' && expenseByCategory.length > 0) ||
           (activeTab === 'income' && incomeByCategory.length > 0)) && (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: palette.card, borderColor: palette.border },
-            ]}
-          >
+          <View style={styles.card}>
             <View style={styles.listHeader}>
-              <Text style={[styles.cardTitle, { color: palette.text }]}>
-                Chi tiết danh mục
-              </Text>
+              <Text style={styles.cardTitle}>Chi tiết danh mục</Text>
               <Text
                 style={[
                   styles.totalText,
-                  {
-                    color:
-                      activeTab === 'expense'
-                        ? palette.danger
-                        : palette.success,
-                  },
+                  { color: activeTab === 'expense' ? '#EC4899' : '#10B981' },
                 ]}
               >
                 Tổng:{' '}
@@ -324,10 +281,7 @@ export function CategoryReportScreen() {
                 return (
                   <Pressable
                     key={cat.categoryId}
-                    style={[
-                      styles.categoryRow,
-                      { borderBottomColor: palette.border },
-                    ]}
+                    style={styles.categoryRow}
                     onPress={() => {
                       (navigation as any).navigate('CategoryDetail', {
                         categoryId: cat.categoryId,
@@ -345,17 +299,8 @@ export function CategoryReportScreen() {
                         ]}
                       />
                       <View style={styles.categoryTextContainer}>
-                        <Text
-                          style={[
-                            styles.categoryLabel,
-                            { color: palette.text },
-                          ]}
-                        >
-                          {cat.label}
-                        </Text>
-                        <Text
-                          style={[styles.percentText, { color: palette.muted }]}
-                        >
+                        <Text style={styles.categoryLabel}>{cat.label}</Text>
+                        <Text style={styles.percentText}>
                           {percent}% của tổng
                         </Text>
                       </View>
@@ -366,19 +311,13 @@ export function CategoryReportScreen() {
                           styles.categoryAmount,
                           {
                             color:
-                              activeTab === 'expense'
-                                ? palette.danger
-                                : palette.success,
+                              activeTab === 'expense' ? '#EC4899' : '#10B981',
                           },
                         ]}
                       >
                         {formatCurrency(cat.value)}
                       </Text>
-                      <Feather
-                        name="chevron-right"
-                        size={20}
-                        color={palette.muted}
-                      />
+                      <Feather name="chevron-right" size={18} color="#94A3B8" />
                     </View>
                   </Pressable>
                 );
@@ -392,11 +331,14 @@ export function CategoryReportScreen() {
         visible={showMonthPicker}
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
-        onMonthChange={setSelectedMonth}
-        onYearChange={setSelectedYear}
+        onSelect={(month, year) => {
+          setSelectedMonth(month);
+          setSelectedYear(year);
+          setShowMonthPicker(false);
+        }}
         onClose={() => setShowMonthPicker(false)}
       />
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -404,120 +346,180 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  statusBarSpacer: {
+    height: Platform.OS === 'ios' ? 40 : 20,
+  },
+  glowLeft: {
+    position: 'absolute',
+    top: -100,
+    left: -100,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: '#10B981',
+    opacity: 0.15,
+    blur: 60,
+  },
+  glowRight: {
+    position: 'absolute',
+    top: 100,
+    right: -80,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: '#EC4899',
+    opacity: 0.12,
+    blur: 50,
+  },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     flex: 1,
     textAlign: 'center',
+    color: '#F1F5F9',
   },
   container: {
-    padding: 16,
-    paddingBottom: 24,
-    gap: 12,
+    padding: 14,
+    paddingBottom: 20,
+    gap: 10,
   },
   tabsContainer: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 5,
   },
   tab: {
     flex: 1,
-    padding: 10,
-    borderRadius: 10,
+    padding: 8,
+    borderRadius: 8,
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  tabActive: {
+    backgroundColor: '#EC4899',
+    borderColor: '#EC4899',
+  },
+  tabActiveIncome: {
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
   },
   tabText: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
+    color: '#F1F5F9',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
   },
   modeSelector: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 5,
   },
   modeButton: {
     flex: 1,
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
+    padding: 8,
+    borderRadius: 8,
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  modeButtonActive: {
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
   },
   modeButtonText: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
+    color: '#F1F5F9',
+  },
+  modeButtonTextActive: {
+    color: '#FFFFFF',
   },
   periodSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   periodText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
+    color: '#F1F5F9',
   },
   card: {
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    gap: 12,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    gap: 10,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
+    color: '#F1F5F9',
   },
   totalText: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
   },
   listHeader: {
-    gap: 6,
-    marginBottom: 6,
+    gap: 5,
+    marginBottom: 5,
   },
   chartContainer: {
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    gap: 8,
   },
   barWrapper: {
     alignItems: 'center',
-    gap: 5,
-    minWidth: 65,
+    gap: 4,
+    minWidth: 58,
   },
   barContainer: {
-    height: 120,
+    height: 100,
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
   },
   bar: {
-    width: 32,
-    borderRadius: 8,
+    width: 28,
+    borderRadius: 7,
     minHeight: 2,
   },
   categoryLabelShort: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-    maxWidth: 70,
+    maxWidth: 65,
     textAlign: 'center',
+    color: '#F1F5F9',
   },
   amountText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '500',
   },
   categoryList: {
@@ -527,38 +529,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   categoryInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     flex: 1,
   },
   categoryDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   categoryTextContainer: {
     flex: 1,
-    gap: 3,
+    gap: 2,
   },
   categoryLabel: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
+    color: '#F1F5F9',
   },
   percentText: {
-    fontSize: 12,
+    fontSize: 10,
+    color: '#94A3B8',
   },
   categoryValues: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
   },
   categoryAmount: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
   },
 });

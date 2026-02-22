@@ -88,20 +88,27 @@ export function CustomModal({
         <Animated.View
           entering={SlideInDown.springify().damping(20).stiffness(80)}
           exiting={SlideOutDown.duration(150)}
-          style={[styles.modalContainer, { backgroundColor: palette.card }]}
+          style={[styles.modalContainer, { backgroundColor: '#1a1f2e' }]}
         >
           {/* Icon */}
-          <View style={[styles.iconContainer, { backgroundColor: `${iconConfig.color}15` }]}>
-            <Feather name={iconConfig.name} size={40} color={iconConfig.color} />
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: `${iconConfig.color}15` },
+            ]}
+          >
+            <Feather
+              name={iconConfig.name}
+              size={40}
+              color={iconConfig.color}
+            />
           </View>
 
           {/* Title */}
-          <Text style={[styles.title, { color: palette.text }]}>{title}</Text>
+          <Text style={[styles.title, { color: '#F1F5F9' }]}>{title}</Text>
 
           {/* Message */}
-          <Text style={[styles.message, { color: palette.muted }]}>
-            {message}
-          </Text>
+          <Text style={[styles.message, { color: '#94A3B8' }]}>{message}</Text>
 
           {/* Buttons */}
           <View style={styles.buttonContainer}>
@@ -112,10 +119,13 @@ export function CustomModal({
                 style={[
                   styles.button,
                   styles.cancelButton,
-                  { backgroundColor: palette.background, borderColor: palette.border },
+                  {
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                  },
                 ]}
               >
-                <Text style={[styles.buttonText, { color: palette.muted }]}>
+                <Text style={[styles.buttonText, { color: '#94A3B8' }]}>
                   {cancelText}
                 </Text>
               </TouchableOpacity>
@@ -144,7 +154,7 @@ export function CustomModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
