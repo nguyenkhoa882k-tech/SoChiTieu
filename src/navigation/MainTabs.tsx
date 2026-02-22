@@ -10,7 +10,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import Feather from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
-import { BlurView } from '@react-native-community/blur';
 import { OverviewScreen } from '@/screens/OverviewScreen';
 import { AddEntryScreen } from '@/screens/AddEntryScreen';
 import { CalendarScreen } from '@/screens/CalendarScreen';
@@ -21,7 +20,6 @@ import { YearlyReportScreen } from '@/screens/YearlyReportScreen';
 import { CategoryReportScreen } from '@/screens/CategoryReportScreen';
 import { CategoryDetailScreen } from '@/screens/CategoryDetailScreen';
 import { BalanceHistoryScreen } from '@/screens/BalanceHistoryScreen';
-import { useThemeStore } from '@/stores/themeStore';
 
 export type RootStackParamList = {
   MainTabs: undefined;
@@ -113,8 +111,6 @@ function AnimatedIcon({ routeName, color, size, focused }: AnimatedIconProps) {
 const TabIcon = React.memo(AnimatedIcon);
 
 function TabNavigator() {
-  const palette = useThemeStore(state => state.palette);
-
   const renderIcon = React.useCallback(
     (route: { name: keyof TabParamList }) =>
       ({

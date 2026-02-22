@@ -19,19 +19,73 @@ import { useThemeStore } from '@/stores/themeStore';
 import { TransactionType } from '@/types/transaction';
 
 const AVAILABLE_ICONS = [
-  'coffee', 'shopping-bag', 'home', 'car', 'heart', 'book', 'music',
-  'camera', 'gift', 'star', 'umbrella', 'briefcase', 'phone', 'mail',
-  'globe', 'tool', 'scissors', 'droplet', 'sun', 'moon', 'cloud',
-  'zap', 'film', 'headphones', 'watch', 'award', 'target', 'flag',
-  'pie-chart', 'battery', 'wifi', 'bluetooth', 'monitor', 'printer',
-  'cpu', 'hard-drive', 'package', 'truck', 'anchor', 'key',
+  'coffee',
+  'shopping-bag',
+  'home',
+  'car',
+  'heart',
+  'book',
+  'music',
+  'camera',
+  'gift',
+  'star',
+  'umbrella',
+  'briefcase',
+  'phone',
+  'mail',
+  'globe',
+  'tool',
+  'scissors',
+  'droplet',
+  'sun',
+  'moon',
+  'cloud',
+  'zap',
+  'film',
+  'headphones',
+  'watch',
+  'award',
+  'target',
+  'flag',
+  'pie-chart',
+  'battery',
+  'wifi',
+  'bluetooth',
+  'monitor',
+  'printer',
+  'cpu',
+  'hard-drive',
+  'package',
+  'truck',
+  'anchor',
+  'key',
 ];
 
 const AVAILABLE_COLORS = [
-  '#E74C3C', '#E91E63', '#9B59B6', '#673AB7', '#3F51B5', '#2196F3',
-  '#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39',
-  '#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#795548', '#607D8B',
-  '#1ABC9C', '#2ECC71', '#3498DB', '#F39C12', '#E67E22', '#C0392B',
+  '#E74C3C',
+  '#E91E63',
+  '#9B59B6',
+  '#673AB7',
+  '#3F51B5',
+  '#2196F3',
+  '#03A9F4',
+  '#00BCD4',
+  '#009688',
+  '#4CAF50',
+  '#8BC34A',
+  '#CDDC39',
+  '#FFEB3B',
+  '#FFC107',
+  '#FF9800',
+  '#FF5722',
+  '#795548',
+  '#607D8B',
+  '#1ABC9C',
+  '#2ECC71',
+  '#3498DB',
+  '#F39C12',
+  '#E67E22',
+  '#C0392B',
 ];
 
 interface AddCategoryModalProps {
@@ -46,7 +100,11 @@ interface AddCategoryModalProps {
   }) => void;
 }
 
-export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalProps) {
+export function AddCategoryModal({
+  visible,
+  onClose,
+  onAdd,
+}: AddCategoryModalProps) {
   const palette = useThemeStore(state => state.palette);
   const [label, setLabel] = useState('');
   const [type, setType] = useState<TransactionType>('expense');
@@ -56,7 +114,7 @@ export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalPr
 
   const handleAdd = () => {
     if (!label.trim()) return;
-    
+
     onAdd({
       label: label.trim(),
       type,
@@ -64,7 +122,7 @@ export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalPr
       color: selectedColor,
       description: description.trim() || undefined,
     });
-    
+
     // Reset form
     setLabel('');
     setType('expense');
@@ -107,11 +165,23 @@ export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalPr
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
             {/* Tên danh mục */}
-            <Text style={[styles.label, { color: palette.muted }]}>Tên danh mục *</Text>
+            <Text style={[styles.label, { color: palette.muted }]}>
+              Tên danh mục *
+            </Text>
             <TextInput
-              style={[styles.input, { borderColor: palette.border, color: palette.text, backgroundColor: palette.background }]}
+              style={[
+                styles.input,
+                {
+                  borderColor: palette.border,
+                  color: palette.text,
+                  backgroundColor: palette.background,
+                },
+              ]}
               placeholder="Ví dụ: Ăn sáng, Xăng xe..."
               placeholderTextColor={palette.muted}
               value={label}
@@ -119,13 +189,21 @@ export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalPr
             />
 
             {/* Loại */}
-            <Text style={[styles.label, { color: palette.muted }]}>Loại giao dịch</Text>
+            <Text style={[styles.label, { color: palette.muted }]}>
+              Loại giao dịch
+            </Text>
             <View style={styles.typeRow}>
               <TouchableOpacity
                 style={[
                   styles.typeButton,
-                  type === 'expense' && { backgroundColor: palette.primary, borderColor: palette.primary },
-                  type !== 'expense' && { backgroundColor: palette.card, borderColor: palette.border },
+                  type === 'expense' && {
+                    backgroundColor: palette.primary,
+                    borderColor: palette.primary,
+                  },
+                  type !== 'expense' && {
+                    backgroundColor: palette.card,
+                    borderColor: palette.border,
+                  },
                 ]}
                 onPress={() => setType('expense')}
               >
@@ -134,15 +212,27 @@ export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalPr
                   size={18}
                   color={type === 'expense' ? '#fff' : palette.text}
                 />
-                <Text style={[styles.typeText, type === 'expense' && styles.typeTextActive, type !== 'expense' && { color: palette.text }]}>
+                <Text
+                  style={[
+                    styles.typeText,
+                    type === 'expense' && styles.typeTextActive,
+                    type !== 'expense' && { color: palette.text },
+                  ]}
+                >
                   Khoản chi
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.typeButton,
-                  type === 'income' && { backgroundColor: palette.primary, borderColor: palette.primary },
-                  type !== 'income' && { backgroundColor: palette.card, borderColor: palette.border },
+                  type === 'income' && {
+                    backgroundColor: palette.primary,
+                    borderColor: palette.primary,
+                  },
+                  type !== 'income' && {
+                    backgroundColor: palette.card,
+                    borderColor: palette.border,
+                  },
                 ]}
                 onPress={() => setType('income')}
               >
@@ -151,38 +241,56 @@ export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalPr
                   size={18}
                   color={type === 'income' ? '#fff' : palette.text}
                 />
-                <Text style={[styles.typeText, type === 'income' && styles.typeTextActive, type !== 'income' && { color: palette.text }]}>
+                <Text
+                  style={[
+                    styles.typeText,
+                    type === 'income' && styles.typeTextActive,
+                    type !== 'income' && { color: palette.text },
+                  ]}
+                >
                   Khoản thu
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Icon */}
-            <Text style={[styles.label, { color: palette.muted }]}>Chọn biểu tượng</Text>
+            <Text style={[styles.label, { color: palette.muted }]}>
+              Chọn biểu tượng
+            </Text>
             <View style={styles.iconGrid}>
-              {AVAILABLE_ICONS.map((icon) => (
+              {AVAILABLE_ICONS.map(icon => (
                 <TouchableOpacity
                   key={icon}
                   style={[
                     styles.iconButton,
-                    selectedIcon === icon && { backgroundColor: `${selectedColor}20`, borderColor: selectedColor },
-                    selectedIcon !== icon && { backgroundColor: palette.background, borderColor: palette.border },
+                    selectedIcon === icon && {
+                      backgroundColor: `${selectedColor}20`,
+                      borderColor: selectedColor,
+                    },
+                    selectedIcon !== icon && {
+                      backgroundColor: palette.background,
+                      borderColor: palette.border,
+                    },
                   ]}
                   onPress={() => setSelectedIcon(icon)}
                 >
                   <Feather
                     name={icon as any}
                     size={20}
-                    color={selectedIcon === icon ? selectedColor : palette.muted}
+                    color={
+                      selectedIcon === icon ? selectedColor : palette.muted
+                    }
                   />
                 </TouchableOpacity>
               ))}
             </View>
 
             {/* Màu sắc */}
-            <Text style={[styles.label, { color: palette.muted }]}>Chọn màu sắc</Text>
+            <Text style={[styles.label, { color: palette.muted }]}>
+              Chọn màu sắc
+            </Text>
             <View style={styles.colorGrid}>
-              {AVAILABLE_COLORS.map((color) => (
+              {AVAILABLE_COLORS.map(color => (
                 <TouchableOpacity
                   key={color}
                   style={[
@@ -200,9 +308,19 @@ export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalPr
             </View>
 
             {/* Mô tả */}
-            <Text style={[styles.label, { color: palette.muted }]}>Mô tả (tùy chọn)</Text>
+            <Text style={[styles.label, { color: palette.muted }]}>
+              Mô tả (tùy chọn)
+            </Text>
             <TextInput
-              style={[styles.input, styles.textArea, { borderColor: palette.border, color: palette.text, backgroundColor: palette.background }]}
+              style={[
+                styles.input,
+                styles.textArea,
+                {
+                  borderColor: palette.border,
+                  color: palette.text,
+                  backgroundColor: palette.background,
+                },
+              ]}
               placeholder="Thêm mô tả ngắn..."
               placeholderTextColor={palette.muted}
               value={description}
@@ -211,14 +329,23 @@ export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalPr
             />
 
             {/* Preview */}
-            <Text style={[styles.label, { color: palette.muted }]}>Xem trước</Text>
+            <Text style={[styles.label, { color: palette.muted }]}>
+              Xem trước
+            </Text>
             <View
               style={[
                 styles.preview,
-                { backgroundColor: `${selectedColor}15`, borderColor: selectedColor },
+                {
+                  backgroundColor: `${selectedColor}15`,
+                  borderColor: selectedColor,
+                },
               ]}
             >
-              <Feather name={selectedIcon as any} size={24} color={selectedColor} />
+              <Feather
+                name={selectedIcon as any}
+                size={24}
+                color={selectedColor}
+              />
               <Text style={[styles.previewText, { color: palette.text }]}>
                 {label || 'Tên danh mục'}
               </Text>
@@ -228,17 +355,32 @@ export function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalPr
           {/* Buttons */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={[styles.button, styles.cancelButton, { backgroundColor: palette.background, borderColor: palette.border }]}
+              style={[
+                styles.button,
+                styles.cancelButton,
+                {
+                  backgroundColor: palette.background,
+                  borderColor: palette.border,
+                },
+              ]}
               onPress={onClose}
             >
-              <Text style={[styles.buttonText, { color: palette.muted }]}>Hủy</Text>
+              <Text style={[styles.buttonText, { color: palette.muted }]}>
+                Hủy
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, styles.addButton, { backgroundColor: palette.primary }]}
+              style={[
+                styles.button,
+                styles.addButton,
+                { backgroundColor: palette.primary },
+              ]}
               onPress={handleAdd}
               disabled={!label.trim()}
             >
-              <Text style={[styles.buttonText, styles.addButtonText]}>Thêm</Text>
+              <Text style={[styles.buttonText, styles.addButtonText]}>
+                Thêm
+              </Text>
             </TouchableOpacity>
           </View>
         </Animated.View>

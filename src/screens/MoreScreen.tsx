@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '@/navigation/MainTabs';
@@ -28,7 +29,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 export function MoreScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { palette, preference, setPreference } = useThemeStore();
+  const { preference, setPreference } = useThemeStore();
   const { transactions, importTransactions, clearAllData } =
     useTransactionStore();
   const { customCategories, addCustomCategory } = useCategoryStore();
@@ -114,7 +115,6 @@ export function MoreScreen() {
   };
 
   const handleImportData = async () => {
-    // Show file picker
     setShowFilePicker(true);
   };
 
@@ -164,11 +164,9 @@ export function MoreScreen() {
     try {
       setIsImporting(true);
 
-      // Import data
       const result = await importData(filePath);
 
       if (result.success && result.data) {
-        // Confirm before importing
         setConfirmModal({
           visible: true,
           title: 'Xác nhận nhập dữ liệu',
@@ -176,12 +174,10 @@ export function MoreScreen() {
           onConfirm: async () => {
             setConfirmModal({ ...confirmModal, visible: false });
             try {
-              // Import transactions with smart merge
               const importResult = await importTransactions(
                 result.data!.transactions,
               );
 
-              // Import custom categories if available
               if (result.data!.customCategories) {
                 for (const category of result.data!.customCategories) {
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -329,143 +325,185 @@ export function MoreScreen() {
   ];
 
   return (
-    <ScrollView
-      style={[styles.screen, { backgroundColor: palette.background }]}
-      contentContainerStyle={styles.container}
-    >
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: palette.card, borderColor: palette.border },
-        ]}
-      >
-        <Text style={[styles.cardTitle, { color: palette.text }]}>
-          Giao diện
-        </Text>
-        <View style={styles.rowBetween}>
-          <View>
-            <Text style={[styles.title, { color: palette.text }]}>
-              Chế độ tối
-            </Text>
-            <Text style={{ color: palette.muted }}>Tự động theo hệ thống</Text>
-          </View>
-          <Switch
-            trackColor={{ true: palette.primary, false: palette.border }}
-            thumbColor="#fff"
-            value={preference === 'dark'}
-            onValueChange={state => setPreference(state ? 'dark' : 'light')}
-          />
-        </View>
-        <View style={styles.rowBetween}>
-          <View>
-            <Text style={[styles.title, { color: palette.text }]}>
-              Đồng bộ hệ thống
-            </Text>
-            <Text style={{ color: palette.muted }}>
-              Tự động áp dụng theme hệ thống
-            </Text>
-          </View>
-          <Switch
-            value={preference === 'system'}
-            onValueChange={state => setPreference(state ? 'system' : 'light')}
-          />
-        </View>
+    <View style={styles.screen}>
+      <LinearGradient
+        colors={['#1a1f2e', '#16213e', '#0f1419']}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+
+      <View style={styles.glowLeft}>
+        <LinearGradient
+          colors={['rgba(16, 185, 129, 0.3)', 'transparent']}
+          style={styles.glowGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      </View>
+      <View style={styles.glowRight}>
+        <LinearGradient
+          colors={['rgba(236, 72, 153, 0.25)', 'transparent']}
+          style={styles.glowGradient}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        />
       </View>
 
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: palette.card, borderColor: palette.border },
-        ]}
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.cardTitle, { color: palette.text }]}>Báo cáo</Text>
-        {reportShortcuts.map(item => (
-          <Pressable
-            key={item.title}
-            style={[styles.shortcutRow, { borderColor: palette.border }]}
-            onPress={item.onPress}
+        <View style={styles.statusBarSpacer} />
+
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.03)']}
+            style={styles.cardGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
           >
-            <View
-              style={[
-                styles.iconWrapper,
-                { backgroundColor: `${palette.primary}15` },
-              ]}
-            >
-              <Feather
-                name={item.icon as any}
-                size={20}
-                color={palette.primary}
+            <Text style={styles.cardTitle}>Giao diện</Text>
+            <View style={styles.rowBetween}>
+              <View>
+                <Text style={styles.title}>Chế độ tối</Text>
+                <Text style={styles.subtitle}>Tự động theo hệ thống</Text>
+              </View>
+              <Switch
+                trackColor={{
+                  true: '#10B981',
+                  false: 'rgba(255, 255, 255, 0.2)',
+                }}
+                thumbColor="#fff"
+                value={preference === 'dark'}
+                onValueChange={state => setPreference(state ? 'dark' : 'light')}
               />
             </View>
-            <View style={styles.flexFill}>
-              <Text style={[styles.title, { color: palette.text }]}>
-                {item.title}
-              </Text>
-              <Text style={{ color: palette.muted }}>{item.subtitle}</Text>
+            <View style={styles.rowBetween}>
+              <View>
+                <Text style={styles.title}>Đồng bộ hệ thống</Text>
+                <Text style={styles.subtitle}>
+                  Tự động áp dụng theme hệ thống
+                </Text>
+              </View>
+              <Switch
+                trackColor={{
+                  true: '#10B981',
+                  false: 'rgba(255, 255, 255, 0.2)',
+                }}
+                thumbColor="#fff"
+                value={preference === 'system'}
+                onValueChange={state =>
+                  setPreference(state ? 'system' : 'light')
+                }
+              />
             </View>
-            <Feather name="chevron-right" size={18} color={palette.muted} />
-          </Pressable>
-        ))}
-      </View>
+          </LinearGradient>
+        </View>
 
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: palette.card, borderColor: palette.border },
-        ]}
-      >
-        <Text style={[styles.cardTitle, { color: palette.text }]}>
-          Tiện ích
-        </Text>
-        {shortcuts.map(item => (
-          <Pressable
-            key={item.title}
-            style={[styles.shortcutRow, { borderColor: palette.border }]}
-            onPress={item.onPress}
-            disabled={item.loading}
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.03)']}
+            style={styles.cardGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
           >
-            <View
-              style={[
-                styles.iconWrapper,
-                { backgroundColor: `${palette.primary}15` },
-              ]}
-            >
-              {item.loading ? (
-                <Text style={{ color: palette.primary }}>⏳</Text>
-              ) : (
-                <Feather
-                  name={item.icon as any}
-                  size={18}
-                  color={palette.primary}
-                />
-              )}
-            </View>
-            <View style={styles.flexFill}>
-              <Text style={[styles.title, { color: palette.text }]}>
-                {item.title}
-              </Text>
-              <Text style={{ color: palette.muted }}>{item.subtitle}</Text>
-            </View>
-            <Feather name="chevron-right" size={18} color={palette.muted} />
-          </Pressable>
-        ))}
-      </View>
+            <Text style={styles.cardTitle}>Báo cáo</Text>
+            {reportShortcuts.map(item => (
+              <Pressable
+                key={item.title}
+                style={styles.shortcutRow}
+                onPress={item.onPress}
+              >
+                <View style={styles.iconWrapper}>
+                  <LinearGradient
+                    colors={[
+                      'rgba(16, 185, 129, 0.2)',
+                      'rgba(16, 185, 129, 0.1)',
+                    ]}
+                    style={styles.iconWrapperInner}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Feather
+                      name={item.icon as any}
+                      size={18}
+                      color="#10B981"
+                    />
+                  </LinearGradient>
+                </View>
+                <View style={styles.flexFill}>
+                  <Text style={styles.title}>{item.title}</Text>
+                  <Text style={styles.subtitle}>{item.subtitle}</Text>
+                </View>
+                <Feather name="chevron-right" size={18} color="#64748B" />
+              </Pressable>
+            ))}
+          </LinearGradient>
+        </View>
 
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: palette.card, borderColor: palette.border },
-        ]}
-      >
-        <Text style={[styles.cardTitle, { color: palette.text }]}>
-          Quảng cáo
-        </Text>
-        <Text style={{ color: palette.muted, fontSize: 12 }}>
-          {__DEV__
-            ? '✓ Đang bật (chế độ debug) - Quảng cáo test đang hiển thị'
-            : '✗ Đã tắt (production) - Quảng cáo chỉ hiện khi debug'}
-        </Text>
-      </View>
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.03)']}
+            style={styles.cardGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.cardTitle}>Tiện ích</Text>
+            {shortcuts.map(item => (
+              <Pressable
+                key={item.title}
+                style={styles.shortcutRow}
+                onPress={item.onPress}
+                disabled={item.loading}
+              >
+                <View style={styles.iconWrapper}>
+                  <LinearGradient
+                    colors={[
+                      'rgba(16, 185, 129, 0.2)',
+                      'rgba(16, 185, 129, 0.1)',
+                    ]}
+                    style={styles.iconWrapperInner}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    {item.loading ? (
+                      <Text style={{ color: '#10B981' }}>⏳</Text>
+                    ) : (
+                      <Feather
+                        name={item.icon as any}
+                        size={16}
+                        color="#10B981"
+                      />
+                    )}
+                  </LinearGradient>
+                </View>
+                <View style={styles.flexFill}>
+                  <Text style={styles.title}>{item.title}</Text>
+                  <Text style={styles.subtitle}>{item.subtitle}</Text>
+                </View>
+                <Feather name="chevron-right" size={18} color="#64748B" />
+              </Pressable>
+            ))}
+          </LinearGradient>
+        </View>
+
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.03)']}
+            style={styles.cardGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.cardTitle}>Quảng cáo</Text>
+            <Text style={styles.adStatus}>
+              {__DEV__
+                ? '✓ Đang bật (chế độ debug) - Quảng cáo test đang hiển thị'
+                : '✗ Đã tắt (production) - Quảng cáo chỉ hiện khi debug'}
+            </Text>
+          </LinearGradient>
+        </View>
+      </ScrollView>
 
       <CustomModal
         visible={modalVisible}
@@ -531,7 +569,6 @@ export function MoreScreen() {
             });
             setModalVisible(true);
           } catch {
-            // User cancelled share
             setModalConfig({
               title: 'Đã hủy chia sẻ',
               message: downloadInfo
@@ -564,28 +601,59 @@ export function MoreScreen() {
         visible={showReminderSettings}
         onClose={() => setShowReminderSettings(false)}
       />
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: '#0f1419',
+  },
+  statusBarSpacer: {
+    height: Platform.OS === 'android' ? 20 : 40,
+  },
+  glowLeft: {
+    position: 'absolute',
+    left: -80,
+    top: 140,
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+  },
+  glowRight: {
+    position: 'absolute',
+    right: -80,
+    top: 400,
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+  },
+  glowGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 125,
   },
   container: {
     padding: 12,
-    paddingBottom: 80,
-    gap: 10,
+    paddingBottom: 100,
+    gap: 12,
   },
   card: {
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 14,
+    overflow: 'hidden',
     borderWidth: 1,
-    gap: 10,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  cardGradient: {
+    padding: 14,
+    gap: 12,
   },
   cardTitle: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
+    color: '#F1F5F9',
+    letterSpacing: -0.2,
   },
   rowBetween: {
     flexDirection: 'row',
@@ -593,24 +661,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 13,
+    color: '#F1F5F9',
+  },
+  subtitle: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 2,
   },
   shortcutRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 10,
+    gap: 10,
+    paddingVertical: 8,
     borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   flexFill: {
     flex: 1,
   },
   iconWrapper: {
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  iconWrapperInner: {
     width: 36,
     height: 36,
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  adStatus: {
+    color: '#94A3B8',
+    fontSize: 11,
+    lineHeight: 16,
   },
 });

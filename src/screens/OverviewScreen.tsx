@@ -19,12 +19,10 @@ import { EditTransactionModal } from '@/components/EditTransactionModal';
 import { defaultFilter, TransactionFilter } from '@/types/filters';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { formatCurrency } from '@/utils/format';
-import { useThemeStore } from '@/stores/themeStore';
 import { TabParamList } from '@/navigation/MainTabs';
 import { Transaction } from '@/types/transaction';
 
 export function OverviewScreen() {
-  const palette = useThemeStore(state => state.palette);
   const { transactions, stats, loading } = useTransactionStore();
   const navigation = useNavigation<NavigationProp<TabParamList>>();
   const [filterVisible, setFilterVisible] = useState(false);
@@ -246,7 +244,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
-    elevation: 10,
+    // elevation: 10,
   },
   glassCardGradient: {
     borderRadius: 20,

@@ -1,9 +1,16 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+} from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import Feather from 'react-native-vector-icons/Feather';
+import LinearGradient from 'react-native-linear-gradient';
 import { useTransactionStore } from '@/stores/transactionStore';
-import { useThemeStore } from '@/stores/themeStore';
 import { formatCurrency, formatDateLabel } from '@/utils/format';
 import { Transaction } from '@/types/transaction';
 import { TransactionList } from '@/components/TransactionList';
@@ -17,7 +24,6 @@ function getMonthKey(date: Date) {
 }
 
 export function CalendarScreen() {
-  const palette = useThemeStore(state => state.palette);
   const transactions = useTransactionStore(state => state.transactions);
   const [monthAnchor, setMonthAnchor] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(
@@ -56,27 +62,23 @@ export function CalendarScreen() {
     Object.entries(dailyMap).forEach(([dateKey, stats]) => {
       marks[dateKey] = {
         dots: [
-          stats.income
-            ? { color: palette.success, key: `${dateKey}-inc` }
-            : null,
-          stats.expense
-            ? { color: palette.danger, key: `${dateKey}-exp` }
-            : null,
+          stats.income ? { color: '#10B981', key: `${dateKey}-inc` } : null,
+          stats.expense ? { color: '#EC4899', key: `${dateKey}-exp` } : null,
         ].filter(Boolean),
         selected: dateKey === selectedDate,
-        selectedColor: palette.accent,
+        selectedColor: '#10B981',
         selectedTextColor: '#fff',
       };
     });
     if (!marks[selectedDate]) {
       marks[selectedDate] = {
         selected: true,
-        selectedColor: palette.accent,
+        selectedColor: '#10B981',
         selectedTextColor: '#fff',
       };
     }
     return marks;
-  }, [dailyMap, palette, selectedDate]);
+  }, [dailyMap, selectedDate]);
 
   const selectedItems = dailyMap[selectedDate]?.items ?? [];
 
@@ -96,99 +98,175 @@ export function CalendarScreen() {
   };
 
   return (
-    <ScrollView
-      style={[styles.screen, { backgroundColor: palette.background }]}
-      contentContainerStyle={styles.container}
-    >
-      <View style={styles.monthHeader}>
-        <Pressable
-          style={[styles.monthButton, { borderColor: palette.border }]}
-          onPress={() => changeMonth('prev')}
-        >
-          <Feather name="chevron-left" size={18} color={palette.text} />
-        </Pressable>
-        <Text style={[styles.monthTitle, { color: palette.text }]}>
-          Tháng {monthAnchor.getMonth() + 1}, {monthAnchor.getFullYear()}
-        </Text>
-        <Pressable
-          style={[styles.monthButton, { borderColor: palette.border }]}
-          onPress={() => changeMonth('next')}
-        >
-          <Feather name="chevron-right" size={18} color={palette.text} />
-        </Pressable>
-      </View>
-
-      <Calendar
-        current={monthAnchor.toISOString().slice(0, 10)}
-        markedDates={markedDates}
-        markingType="multi-dot"
-        onDayPress={(day: DateObject) => setSelectedDate(day.dateString)}
-        theme={{
-          calendarBackground: palette.card,
-          dayTextColor: palette.text,
-          monthTextColor: palette.text,
-          todayTextColor: palette.secondary,
-          textDayFontSize: 14,
-          textMonthFontSize: 15,
-          textDayHeaderFontSize: 12,
-        }}
-        style={styles.calendar}
+    <View style={styles.screen}>
+      <LinearGradient
+        colors={['#1a1f2e', '#16213e', '#0f1419']}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       />
 
-      <View
-        style={[
-          styles.summaryCard,
-          { backgroundColor: palette.card, borderColor: palette.border },
-        ]}
+      <View style={styles.glowLeft}>
+        <LinearGradient
+          colors={['rgba(16, 185, 129, 0.3)', 'transparent']}
+          style={styles.glowGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      </View>
+      <View style={styles.glowRight}>
+        <LinearGradient
+          colors={['rgba(236, 72, 153, 0.25)', 'transparent']}
+          style={styles.glowGradient}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        />
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.summaryColumn}>
-          <Text style={[styles.summaryLabel, { color: palette.muted }]}>
-            Thu
-          </Text>
-          <Text style={[styles.summaryValue, { color: palette.success }]}>
-            {formatCurrency(totalIncome)}
-          </Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.summaryColumn}>
-          <Text style={[styles.summaryLabel, { color: palette.muted }]}>
-            Chi
-          </Text>
-          <Text style={[styles.summaryValue, { color: palette.danger }]}>
-            {formatCurrency(totalExpense)}
-          </Text>
-        </View>
-      </View>
+        <View style={styles.statusBarSpacer} />
 
-      <AdBanner placement="calendar" />
+        <View style={styles.monthHeader}>
+          <Pressable
+            style={styles.monthButton}
+            onPress={() => changeMonth('prev')}
+          >
+            <LinearGradient
+              colors={['rgba(16, 185, 129, 0.2)', 'rgba(16, 185, 129, 0.1)']}
+              style={styles.monthButtonInner}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Feather name="chevron-left" size={20} color="#10B981" />
+            </LinearGradient>
+          </Pressable>
+          <Text style={styles.monthTitle}>
+            Tháng {monthAnchor.getMonth() + 1}, {monthAnchor.getFullYear()}
+          </Text>
+          <Pressable
+            style={styles.monthButton}
+            onPress={() => changeMonth('next')}
+          >
+            <LinearGradient
+              colors={['rgba(16, 185, 129, 0.2)', 'rgba(16, 185, 129, 0.1)']}
+              style={styles.monthButtonInner}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Feather name="chevron-right" size={20} color="#10B981" />
+            </LinearGradient>
+          </Pressable>
+        </View>
 
-      <Text style={[styles.sectionTitle, { color: palette.text }]}>
-        {`Chi tiết ${formatDateLabel(selectedDate)}`}
-      </Text>
-      <TransactionList
-        data={selectedItems}
-        emptyLabel="Không có giao dịch trong ngày"
-        onEdit={tx => setEditingTransaction(tx)}
-      />
+        <View style={styles.calendarWrapper}>
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.03)']}
+            style={styles.calendarGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Calendar
+              current={monthAnchor.toISOString().slice(0, 10)}
+              markedDates={markedDates}
+              markingType="multi-dot"
+              onDayPress={(day: any) => setSelectedDate(day.dateString)}
+              theme={{
+                calendarBackground: 'transparent',
+                dayTextColor: '#F1F5F9',
+                monthTextColor: '#F1F5F9',
+                todayTextColor: '#10B981',
+                textDayFontSize: 13,
+                textMonthFontSize: 14,
+                textDayHeaderFontSize: 11,
+                textDayFontWeight: '600',
+                textMonthFontWeight: '700',
+                selectedDayBackgroundColor: '#10B981',
+                selectedDayTextColor: '#fff',
+                arrowColor: '#10B981',
+              }}
+            />
+          </LinearGradient>
+        </View>
+
+        <View style={styles.summaryCard}>
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.03)']}
+            style={styles.summaryCardGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.summaryColumn}>
+              <Text style={styles.summaryLabel}>Thu</Text>
+              <Text style={styles.summaryValueIncome}>
+                {formatCurrency(totalIncome)}
+              </Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.summaryColumn}>
+              <Text style={styles.summaryLabel}>Chi</Text>
+              <Text style={styles.summaryValueExpense}>
+                {formatCurrency(totalExpense)}
+              </Text>
+            </View>
+          </LinearGradient>
+        </View>
+
+        <AdBanner placement="calendar" />
+
+        <Text style={styles.sectionTitle}>
+          {`Chi tiết ${formatDateLabel(selectedDate)}`}
+        </Text>
+        <TransactionList
+          data={selectedItems}
+          emptyLabel="Không có giao dịch trong ngày"
+          onEdit={tx => setEditingTransaction(tx)}
+        />
+      </ScrollView>
 
       <EditTransactionModal
         visible={!!editingTransaction}
         transaction={editingTransaction}
         onClose={() => setEditingTransaction(null)}
-        onSuccess={() => {
-          // Refresh handled by store
-        }}
+        onSuccess={() => {}}
       />
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: '#0f1419',
+  },
+  statusBarSpacer: {
+    height: Platform.OS === 'android' ? 20 : 40,
+  },
+  glowLeft: {
+    position: 'absolute',
+    left: -80,
+    top: 100,
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+  },
+  glowRight: {
+    position: 'absolute',
+    right: -80,
+    top: 350,
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+  },
+  glowGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 125,
   },
   container: {
-    padding: 16,
+    padding: 12,
     paddingBottom: 100,
     gap: 12,
   },
@@ -199,45 +277,80 @@ const styles = StyleSheet.create({
   },
   monthTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
+    color: '#F1F5F9',
+    letterSpacing: -0.3,
   },
   monthButton: {
-    padding: 6,
     borderRadius: 10,
+    overflow: 'hidden',
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  monthButtonInner: {
+    padding: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarWrapper: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  calendarGradient: {
+    padding: 8,
   },
   summaryCard: {
-    marginTop: 6,
     borderRadius: 16,
-    padding: 18,
+    overflow: 'hidden',
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  summaryCardGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    padding: 16,
   },
   summaryColumn: {
     flex: 1,
   },
   summaryLabel: {
-    fontSize: 12,
+    fontSize: 11,
+    color: '#94A3B8',
     textTransform: 'uppercase',
-  },
-  summaryValue: {
-    marginTop: 4,
-    fontSize: 18,
+    letterSpacing: 0.5,
     fontWeight: '700',
+  },
+  summaryValueIncome: {
+    marginTop: 6,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#10B981',
+    letterSpacing: -0.5,
+  },
+  summaryValueExpense: {
+    marginTop: 6,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#EC4899',
+    letterSpacing: -0.5,
   },
   divider: {
     width: 1,
-    height: 32,
-    backgroundColor: '#E2E8F0',
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  calendar: {
-    borderRadius: 16,
-    overflow: 'hidden',
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#F1F5F9',
+    letterSpacing: -0.2,
   },
 });
